@@ -1,0 +1,39 @@
+{
+    "version": "2.0.0",
+    "type": "shell",
+    "echoCommand": true,
+    "tasks": [
+        {
+            "label": "Quatro Build",
+            "command": "make.exe",
+            "args": [
+                "all",
+                "GCC_PATH=C:\\tools\\gcc-arm-none-eabi-10-2020-q4-major\\bin"
+            ],
+            "options": {
+                "env": {
+                    "PATH": "C:\\tools\\make-3.81-bin\\bin"
+                }
+            },
+            "problemMatcher": [
+                "$gcc"
+            ],
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            }
+        },
+        {
+            "label": "Clean project",
+            "command": "powershell -Command Remove-Item",
+            "args": [
+                "${workspaceFolder}\\build",
+                "-Recurse"
+            ],
+            "problemMatcher": [
+                "$gcc"
+            ],
+            "group": "build"
+        }
+    ]
+}
