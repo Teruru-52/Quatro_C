@@ -205,10 +205,10 @@ int main(void)
     HAL_Delay(100);*/
 
     //Speaker Debug
-    /*__HAL_TIM_SET_COMPARE(&htim2, TIM_CHANNEL_1, 900);
-    HAL_Delay(1000);
+    __HAL_TIM_SET_COMPARE(&htim2, TIM_CHANNEL_1, 400);
+    HAL_Delay(50);
     __HAL_TIM_SET_COMPARE(&htim2, TIM_CHANNEL_1, 0);
-    HAL_Delay(500);*/
+    HAL_Delay(1000);
 
     // FAN motor Debug
     /*__HAL_TIM_SET_COMPARE(&htim8, TIM_CHANNEL_1, 200);
@@ -433,7 +433,7 @@ static void MX_TIM2_Init(void)
   htim2.Instance = TIM2;
   htim2.Init.Prescaler = 0;
   htim2.Init.CounterMode = TIM_COUNTERMODE_UP;
-  htim2.Init.Period = 1000-1;
+  htim2.Init.Period = 10000-1;
   htim2.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
   htim2.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_DISABLE;
   if (HAL_TIM_Base_Init(&htim2) != HAL_OK)
