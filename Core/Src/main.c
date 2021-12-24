@@ -91,19 +91,19 @@ int _write(int file, char *ptr, int len)
 
 int16_t read_encoderL_value(void)
 {
-  int16_t enc_buff = (int16_t)TIM3->CNT;
+  // int16_t enc_buff = (int16_t)TIM3->CNT;
+  // TIM3->CNT = 0;
+  // return enc_buff;
+  int16_t count = 0;
+  uint16_t enc_buff = TIM3->CNT;
   TIM3->CNT = 0;
-  return enc_buff;
-  /*int16_t count = 0;
-  uint16_t enc_buff = TIM1->CNT;
-  TIM1->CNT = 0;
   if( enc_buff > 32767 ){
     count = (int16_t)enc_buff*-1;
   } else {
     count = (int16_t)enc_buff;
   }
 
-  return count;*/
+  return count;
 }
 /* USER CODE END 0 */
 
@@ -148,12 +148,13 @@ int main(void)
   MX_TIM8_Init();
   MX_USART1_UART_Init();
   /* USER CODE BEGIN 2 */
+  setbuf(stdout, NULL);
   HAL_TIM_PWM_Start(&htim2, TIM_CHANNEL_1);
   HAL_TIM_Encoder_Start(&htim3, TIM_CHANNEL_ALL);
   HAL_TIM_Encoder_Start(&htim4, TIM_CHANNEL_ALL);
-  int16_t countL_int = 0;
+  // int16_t countL_int = 0;
+  int32_t countL_int = 0;
   //int16_t countR_int = 0;
-  setbuf(stdout, NULL);
   HAL_TIM_PWM_Start(&htim5, TIM_CHANNEL_1);
   HAL_TIM_PWM_Start(&htim5, TIM_CHANNEL_2);
   HAL_TIM_PWM_Start(&htim5, TIM_CHANNEL_3);
@@ -192,17 +193,17 @@ int main(void)
     // HAL_Delay(2000);
 
     //DC Motor Debug
-    //__HAL_TIM_SET_COMPARE(&htim5, TIM_CHANNEL_1, 150);
+    /*__HAL_TIM_SET_COMPARE(&htim5, TIM_CHANNEL_1, 150);
     __HAL_TIM_SET_COMPARE(&htim5, TIM_CHANNEL_4, 150);
     HAL_Delay(2000);
-    //__HAL_TIM_SET_COMPARE(&htim5, TIM_CHANNEL_1, 0);
+    __HAL_TIM_SET_COMPARE(&htim5, TIM_CHANNEL_1, 0);
     __HAL_TIM_SET_COMPARE(&htim5, TIM_CHANNEL_4, 0);
-    HAL_Delay(2000);
+    HAL_Delay(2000);*/
 
     //Encoder Debug
-    /*countL_int = read_encoderL_value();
-    printf("Encoder_L: %f\n\r", (float)countL_int * 62.83 / 8192.0);
-    HAL_Delay(100);*/
+    countL_int = read_encoderL_value();
+    printf("Encoder_L: %d\n\r", countL_int);
+    HAL_Delay(100);
 
     //Speaker Debug
     /*__HAL_TIM_SET_COMPARE(&htim2, TIM_CHANNEL_1, 400);
@@ -494,7 +495,7 @@ static void MX_TIM3_Init(void)
   htim3.Init.Period = 65535;
   htim3.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
   htim3.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_DISABLE;
-  sConfig.EncoderMode = TIM_ENCODERMODE_TI1;
+  sConfig.EncoderMode = TIM_ENCODERMODE_TI12;
   sConfig.IC1Polarity = TIM_ICPOLARITY_RISING;
   sConfig.IC1Selection = TIM_ICSELECTION_DIRECTTI;
   sConfig.IC1Prescaler = TIM_ICPSC_DIV1;
@@ -543,7 +544,7 @@ static void MX_TIM4_Init(void)
   htim4.Init.Period = 65535;
   htim4.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
   htim4.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_DISABLE;
-  sConfig.EncoderMode = TIM_ENCODERMODE_TI1;
+  sConfig.EncoderMode = TIM_ENCODERMODE_TI12;
   sConfig.IC1Polarity = TIM_ICPOLARITY_RISING;
   sConfig.IC1Selection = TIM_ICSELECTION_DIRECTTI;
   sConfig.IC1Prescaler = TIM_ICPSC_DIV1;
