@@ -192,12 +192,12 @@ int main(void)
     // HAL_Delay(2000);
 
     //DC Motor Debug
-    /*__HAL_TIM_SET_COMPARE(&htim5, TIM_CHANNEL_2, 150);
-    __HAL_TIM_SET_COMPARE(&htim5, TIM_CHANNEL_3, 150);
+    //__HAL_TIM_SET_COMPARE(&htim5, TIM_CHANNEL_1, 150);
+    __HAL_TIM_SET_COMPARE(&htim5, TIM_CHANNEL_4, 150);
     HAL_Delay(2000);
-    __HAL_TIM_SET_COMPARE(&htim5, TIM_CHANNEL_2, 0);
-    __HAL_TIM_SET_COMPARE(&htim5, TIM_CHANNEL_3, 0);
-    HAL_Delay(2000);*/
+    //__HAL_TIM_SET_COMPARE(&htim5, TIM_CHANNEL_1, 0);
+    __HAL_TIM_SET_COMPARE(&htim5, TIM_CHANNEL_4, 0);
+    HAL_Delay(2000);
 
     //Encoder Debug
     /*countL_int = read_encoderL_value();
@@ -205,10 +205,10 @@ int main(void)
     HAL_Delay(100);*/
 
     //Speaker Debug
-    __HAL_TIM_SET_COMPARE(&htim2, TIM_CHANNEL_1, 400);
+    /*__HAL_TIM_SET_COMPARE(&htim2, TIM_CHANNEL_1, 400);
     HAL_Delay(50);
     __HAL_TIM_SET_COMPARE(&htim2, TIM_CHANNEL_1, 0);
-    HAL_Delay(1000);
+    HAL_Delay(1000);*/
 
     // FAN motor Debug
     /*__HAL_TIM_SET_COMPARE(&htim8, TIM_CHANNEL_1, 200);
