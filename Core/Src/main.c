@@ -22,7 +22,9 @@
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-
+#include <string.h>
+#include <stdio.h>
+#include <stdint.h>
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -54,6 +56,8 @@ TIM_HandleTypeDef htim10;
 TIM_HandleTypeDef htim11;
 TIM_HandleTypeDef htim12;
 
+UART_HandleTypeDef huart1;
+
 /* USER CODE BEGIN PV */
 
 /* USER CODE END PV */
@@ -72,13 +76,35 @@ static void MX_ADC1_Init(void);
 static void MX_TIM1_Init(void);
 static void MX_TIM5_Init(void);
 static void MX_TIM8_Init(void);
+static void MX_USART1_UART_Init(void);
 /* USER CODE BEGIN PFP */
 
 /* USER CODE END PFP */
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
+int _write(int file, char *ptr, int len)
+{
+  HAL_UART_Transmit(&huart1,(uint8_t *)ptr,len,10);
+  return len;
+}
 
+int16_t read_encoderL_value(void)
+{
+  int16_t enc_buff = (int16_t)TIM3->CNT;
+  TIM3->CNT = 0;
+  return enc_buff;
+  /*int16_t count = 0;
+  uint16_t enc_buff = TIM1->CNT;
+  TIM1->CNT = 0;
+  if( enc_buff > 32767 ){
+    count = (int16_t)enc_buff*-1;
+  } else {
+    count = (int16_t)enc_buff;
+  }
+
+  return count;*/
+}
 /* USER CODE END 0 */
 
 /**
@@ -120,7 +146,13 @@ int main(void)
   MX_TIM1_Init();
   MX_TIM5_Init();
   MX_TIM8_Init();
+  MX_USART1_UART_Init();
   /* USER CODE BEGIN 2 */
+  HAL_TIM_Encoder_Start(&htim3, TIM_CHANNEL_ALL);
+  HAL_TIM_Encoder_Start(&htim4, TIM_CHANNEL_ALL);
+  int16_t countL_int = 0;
+  //int16_t countR_int = 0;
+  setbuf(stdout, NULL);
   HAL_TIM_PWM_Start(&htim5, TIM_CHANNEL_1);
   HAL_TIM_PWM_Start(&htim5, TIM_CHANNEL_2);
   HAL_TIM_PWM_Start(&htim5, TIM_CHANNEL_3);
@@ -134,6 +166,7 @@ int main(void)
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
+    //LED Debug
     /*
     if (HAL_GPIO_ReadPin(GPIOB, GPIO_PIN_2) == 0)
     {
@@ -155,12 +188,19 @@ int main(void)
       HAL_GPIO_WritePin(GPIOB, GPIO_PIN_15, GPIO_PIN_RESET);
     }*/
     // HAL_Delay(2000);
-    __HAL_TIM_SET_COMPARE(&htim5, TIM_CHANNEL_2, 150);
+
+    //DC Motor Debug
+    /*__HAL_TIM_SET_COMPARE(&htim5, TIM_CHANNEL_2, 150);
     __HAL_TIM_SET_COMPARE(&htim5, TIM_CHANNEL_3, 150);
     HAL_Delay(2000);
     __HAL_TIM_SET_COMPARE(&htim5, TIM_CHANNEL_2, 0);
     __HAL_TIM_SET_COMPARE(&htim5, TIM_CHANNEL_3, 0);
-    HAL_Delay(2000);
+    HAL_Delay(2000);*/
+
+    //Encoder Debug
+    countL_int = read_encoderL_value();
+    printf("Encoder_L: %f\n\r", (float)countL_int * 62.83 / 8192.0);
+    HAL_Delay(100);
   }
   /* USER CODE END 3 */
 }
@@ -775,6 +815,39 @@ static void MX_TIM12_Init(void)
 }
 
 /**
+  * @brief USART1 Initialization Function
+  * @param None
+  * @retval None
+  */
+static void MX_USART1_UART_Init(void)
+{
+
+  /* USER CODE BEGIN USART1_Init 0 */
+
+  /* USER CODE END USART1_Init 0 */
+
+  /* USER CODE BEGIN USART1_Init 1 */
+
+  /* USER CODE END USART1_Init 1 */
+  huart1.Instance = USART1;
+  huart1.Init.BaudRate = 38400;
+  huart1.Init.WordLength = UART_WORDLENGTH_8B;
+  huart1.Init.StopBits = UART_STOPBITS_1;
+  huart1.Init.Parity = UART_PARITY_NONE;
+  huart1.Init.Mode = UART_MODE_TX_RX;
+  huart1.Init.HwFlowCtl = UART_HWCONTROL_NONE;
+  huart1.Init.OverSampling = UART_OVERSAMPLING_16;
+  if (HAL_UART_Init(&huart1) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  /* USER CODE BEGIN USART1_Init 2 */
+
+  /* USER CODE END USART1_Init 2 */
+
+}
+
+/**
   * @brief GPIO Initialization Function
   * @param None
   * @retval None
@@ -823,14 +896,6 @@ static void MX_GPIO_Init(void)
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
   HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
-
-  /*Configure GPIO pins : PA9 PA10 */
-  GPIO_InitStruct.Pin = GPIO_PIN_9|GPIO_PIN_10;
-  GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
-  GPIO_InitStruct.Pull = GPIO_NOPULL;
-  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_VERY_HIGH;
-  GPIO_InitStruct.Alternate = GPIO_AF7_USART1;
-  HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
 
 }
 
