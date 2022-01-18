@@ -373,10 +373,10 @@ int main(void)
     HAL_Delay(1000);*/
 
     // FAN motor Debug
-    /*__HAL_TIM_SET_COMPARE(&htim8, TIM_CHANNEL_1, 200);
+    __HAL_TIM_SET_COMPARE(&htim8, TIM_CHANNEL_1, 500);
     HAL_Delay(2000);
-    __HAL_TIM_SET_COMPARE(&htim8, TIM_CHANNEL_1, 0);
-    HAL_Delay(2000);*/
+    // __HAL_TIM_SET_COMPARE(&htim8, TIM_CHANNEL_1, 0);
+    // HAL_Delay(2000);
 
     //Infrared Radiation LED Debug
     // __HAL_TIM_SET_COMPARE(&htim10, TIM_CHANNEL_1, 20);
@@ -386,9 +386,9 @@ int main(void)
 
     // MPU-6500 Debug
     // printf("%f \r\n", mpu6500_read_gyro_z() - gyro_z_offset_data);
-    theta += (mpu6500_read_gyro_z() - gyro_z_offset_data) * 0.05;
-    printf("%f \r\n", theta);
-    HAL_Delay(50);
+    // theta += (mpu6500_read_gyro_z() - gyro_z_offset_data) * 0.05;
+    // printf("%f \r\n", theta);
+    // HAL_Delay(50);
 
   }
   /* USER CODE END 3 */
