@@ -94,6 +94,79 @@ int _write(int file, char *ptr, int len)
   return len;
 }
 
+uint8_t read_byte(uint8_t reg)
+{
+  uint8_t rx_data[2];
+  uint8_t tx_data[2];
+
+  tx_data[0] = reg | 0x80;
+  tx_data[1] = 0x00;  // dummy
+
+  HAL_GPIO_WritePin(GPIOA, GPIO_PIN_4, RESET);
+  HAL_SPI_TransmitReceive(&hspi1, tx_data, rx_data, 2, 1000);
+  HAL_GPIO_WritePin(GPIOA, GPIO_PIN_4, SET);
+
+  return rx_data[1];
+}
+
+void write_byte(uint8_t reg, uint8_t data)
+{
+  uint8_t rx_data[2];
+  uint8_t tx_data[2];
+
+  //tx_data[0] = reg & 0x7F;
+  tx_data[0] = reg | 0x00;
+  tx_data[1] = data;  // write data
+
+  HAL_GPIO_WritePin(GPIOA, GPIO_PIN_4, RESET); //CSピン立ち下げ
+  HAL_SPI_TransmitReceive(&hspi1, tx_data, rx_data, 2, 1000);
+  HAL_GPIO_WritePin(GPIOA, GPIO_PIN_4, SET); //CSピン立ち上げ
+}
+
+void mpu6500_init(void)
+{
+  uint8_t who_am_i;
+  HAL_Delay(100); // wait start up
+  who_am_i = read_byte(0x75); // 1. read who am i 
+  // printf("who_am_i = 0x%x\r\n",who_am_i); // 2. check who am i value
+  // 2. error check
+  if (who_am_i != 0x70){
+      printf("gyro_error");
+  }
+  HAL_Delay(50); // wait
+  write_byte(0x6B, 0x80); // 3. set pwr_might (20MHz)
+  HAL_Delay(100);
+  write_byte(0x6B, 0x00); // initialization
+  HAL_Delay(100);
+  write_byte(0x1A, 0x00); // 4. set config (FSYNCはNC)
+  HAL_Delay(100);
+  write_byte(0x1B, 0x18); // 5. set gyro config (2000dps)
+  HAL_Delay(100);
+  // printf("0x%x\r\n", read_byte(0x1B));
+}
+
+float mpu6500_read_gyro_z(void) //floatをvoidに変更（返り値なし）
+{
+  int16_t gyro_z;
+  float omega;
+
+  // H:8bit shift, Link h and l
+  gyro_z = (int16_t)(((uint16_t)read_byte(0x47) << 8) | (uint16_t)read_byte(0x48));
+  //printf("%d\r\n", gyro_z);
+  omega = (float)(gyro_z / 16.4); // dps to deg/sec
+  return omega;
+}
+
+float gyro_z_offset_data;
+void gyro_z_offset(){
+  float sum = 0;
+  for (int i = 0; i < 1000; i++){
+    sum += mpu6500_read_gyro_z();
+    HAL_Delay(1);
+  }
+  gyro_z_offset_data = sum / 1000.0;
+}
+
 int16_t read_encoderL_value(void)
 {
   // int16_t enc_buff = (int16_t)TIM3->CNT;
@@ -175,7 +248,7 @@ void read_IR_outer_value(void){
 
 
 // int counter = 0;
-void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
+/*void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 {
     if (htim == &htim1){
         // counter = (counter + 1) % (10 * 1000);
@@ -184,7 +257,7 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
         read_IR_outer_value();
         read_IR_inner_value();
     }
-}
+}*/
 /* USER CODE END 0 */
 
 /**
@@ -237,6 +310,9 @@ int main(void)
   HAL_TIM_Encoder_Start(&htim4, TIM_CHANNEL_ALL);
   // int16_t countL_int = 0;
   int32_t countL_int = 0;
+  float theta = 0;
+  mpu6500_init(); //who_am_i
+  gyro_z_offset();
   //int16_t countR_int = 0;
   HAL_TIM_PWM_Start(&htim5, TIM_CHANNEL_1);
   HAL_TIM_PWM_Start(&htim5, TIM_CHANNEL_2);
@@ -303,10 +379,16 @@ int main(void)
     HAL_Delay(2000);*/
 
     //Infrared Radiation LED Debug
-    __HAL_TIM_SET_COMPARE(&htim10, TIM_CHANNEL_1, 20);
-    __HAL_TIM_SET_COMPARE(&htim11, TIM_CHANNEL_1, 20);
+    // __HAL_TIM_SET_COMPARE(&htim10, TIM_CHANNEL_1, 20);
+    // __HAL_TIM_SET_COMPARE(&htim11, TIM_CHANNEL_1, 20);
     // read_IR_outer_value();
     // read_IR_inner_value();
+
+    // MPU-6500 Debug
+    // printf("%f \r\n", mpu6500_read_gyro_z() - gyro_z_offset_data);
+    theta += (mpu6500_read_gyro_z() - gyro_z_offset_data) * 0.05;
+    printf("%f \r\n", theta);
+    HAL_Delay(50);
 
   }
   /* USER CODE END 3 */
