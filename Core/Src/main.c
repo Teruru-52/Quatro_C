@@ -145,7 +145,7 @@ void mpu6500_init(void)
   // printf("0x%x\r\n", read_byte(0x1B));
 }
 
-float mpu6500_read_gyro_z(void) //floatをvoidに変更（返り値なし）
+float mpu6500_read_gyro_z(void) //floatをvoidに変更?��返り値なし�?
 {
   int16_t gyro_z;
   float omega;
@@ -367,14 +367,14 @@ int main(void)
     HAL_Delay(100);*/
 
     //Speaker Debug
-    /*__HAL_TIM_SET_COMPARE(&htim2, TIM_CHANNEL_1, 400);
+    __HAL_TIM_SET_COMPARE(&htim2, TIM_CHANNEL_1, 50);
     HAL_Delay(50);
     __HAL_TIM_SET_COMPARE(&htim2, TIM_CHANNEL_1, 0);
-    HAL_Delay(1000);*/
+    HAL_Delay(1000);
 
     // FAN motor Debug
-    __HAL_TIM_SET_COMPARE(&htim8, TIM_CHANNEL_1, 500);
-    HAL_Delay(2000);
+    // __HAL_TIM_SET_COMPARE(&htim8, TIM_CHANNEL_1, 500);
+    // HAL_Delay(2000);
     // __HAL_TIM_SET_COMPARE(&htim8, TIM_CHANNEL_1, 0);
     // HAL_Delay(2000);
 
@@ -658,9 +658,9 @@ static void MX_TIM2_Init(void)
 
   /* USER CODE END TIM2_Init 1 */
   htim2.Instance = TIM2;
-  htim2.Init.Prescaler = 0;
+  htim2.Init.Prescaler = 480;
   htim2.Init.CounterMode = TIM_COUNTERMODE_UP;
-  htim2.Init.Period = 10000-1;
+  htim2.Init.Period = 100-1;
   htim2.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
   htim2.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_DISABLE;
   if (HAL_TIM_Base_Init(&htim2) != HAL_OK)
