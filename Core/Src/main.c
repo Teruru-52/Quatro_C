@@ -128,7 +128,7 @@ void mpu6500_init(void)
   uint8_t who_am_i;
   HAL_Delay(100); // wait start up
   who_am_i = read_byte(0x75); // 1. read who am i 
-  // printf("who_am_i = 0x%x\r\n",who_am_i); // 2. check who am i value
+  printf("who_am_i = 0x%x\r\n",who_am_i); // 2. check who am i value
   // 2. error check
   if (who_am_i != 0x70){
       printf("gyro_error");
@@ -142,10 +142,10 @@ void mpu6500_init(void)
   HAL_Delay(100);
   write_byte(0x1B, 0x18); // 5. set gyro config (2000dps)
   HAL_Delay(100);
-  // printf("0x%x\r\n", read_byte(0x1B));
+  printf("0x%x\r\n", read_byte(0x1B));
 }
 
-float mpu6500_read_gyro_z(void) //floatをvoidに変更?��返り値なし�?
+float mpu6500_read_gyro_z(void) //floatをvoidに変更??��?��返り値なし�?
 {
   int16_t gyro_z;
   float omega;
@@ -309,7 +309,7 @@ int main(void)
   HAL_TIM_Encoder_Start(&htim3, TIM_CHANNEL_ALL);
   HAL_TIM_Encoder_Start(&htim4, TIM_CHANNEL_ALL);
   // int16_t countL_int = 0;
-  // int32_t countL_int = 0;
+  int32_t countL_int = 0;
   int count = 0;
   int SW_read = 0;
   float theta = 0;
@@ -393,39 +393,39 @@ int main(void)
     // HAL_Delay(50);
 
     // Push switch and LED
-    if (HAL_GPIO_ReadPin(GPIOB, GPIO_PIN_2) == 0)
-    {
-      count++;
-      if (count > 200)
-      {
-        SW_read++;
-        if (SW_read > 3)
-        {
-          SW_read = 0;
-        }
-        count = 0;
-      }
-    }
-      if (SW_read == 0)
-      {
-        HAL_GPIO_WritePin(GPIOC, GPIO_PIN_8, GPIO_PIN_RESET);
-        HAL_GPIO_WritePin(GPIOC, GPIO_PIN_9, GPIO_PIN_RESET);
-      }
-      else if (SW_read == 1)
-      {
-        HAL_GPIO_WritePin(GPIOC, GPIO_PIN_8, GPIO_PIN_SET);
-        HAL_GPIO_WritePin(GPIOC, GPIO_PIN_9, GPIO_PIN_RESET);
-      }
-      else if (SW_read == 2)
-      {
-        HAL_GPIO_WritePin(GPIOC, GPIO_PIN_8, GPIO_PIN_RESET);
-        HAL_GPIO_WritePin(GPIOC, GPIO_PIN_9, GPIO_PIN_SET);
-      }
-      else
-      {
-        HAL_GPIO_WritePin(GPIOC, GPIO_PIN_8, GPIO_PIN_SET);
-        HAL_GPIO_WritePin(GPIOC, GPIO_PIN_9, GPIO_PIN_SET);
-      }
+    // if (HAL_GPIO_ReadPin(GPIOB, GPIO_PIN_2) == 0)
+    // {
+    //   count++;
+    //   if (count > 200)
+    //   {
+    //     SW_read++;
+    //     if (SW_read > 3)
+    //     {
+    //       SW_read = 0;
+    //     }
+    //     count = 0;
+    //   }
+    // }
+    //   if (SW_read == 0)
+    //   {
+    //     HAL_GPIO_WritePin(GPIOC, GPIO_PIN_8, GPIO_PIN_RESET);
+    //     HAL_GPIO_WritePin(GPIOC, GPIO_PIN_9, GPIO_PIN_RESET);
+    //   }
+    //   else if (SW_read == 1)
+    //   {
+    //     HAL_GPIO_WritePin(GPIOC, GPIO_PIN_8, GPIO_PIN_SET);
+    //     HAL_GPIO_WritePin(GPIOC, GPIO_PIN_9, GPIO_PIN_RESET);
+    //   }
+    //   else if (SW_read == 2)
+    //   {
+    //     HAL_GPIO_WritePin(GPIOC, GPIO_PIN_8, GPIO_PIN_RESET);
+    //     HAL_GPIO_WritePin(GPIOC, GPIO_PIN_9, GPIO_PIN_SET);
+    //   }
+    //   else
+    //   {
+    //     HAL_GPIO_WritePin(GPIOC, GPIO_PIN_8, GPIO_PIN_SET);
+    //     HAL_GPIO_WritePin(GPIOC, GPIO_PIN_9, GPIO_PIN_SET);
+    //   }
   }
   /* USER CODE END 3 */
 }
