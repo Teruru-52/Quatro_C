@@ -309,7 +309,9 @@ int main(void)
   HAL_TIM_Encoder_Start(&htim3, TIM_CHANNEL_ALL);
   HAL_TIM_Encoder_Start(&htim4, TIM_CHANNEL_ALL);
   // int16_t countL_int = 0;
-  int32_t countL_int = 0;
+  // int32_t countL_int = 0;
+  int count = 0;
+  int SW_read = 0;
   float theta = 0;
   mpu6500_init(); //who_am_i
   gyro_z_offset();
@@ -367,10 +369,10 @@ int main(void)
     HAL_Delay(100);*/
 
     //Speaker Debug
-    __HAL_TIM_SET_COMPARE(&htim2, TIM_CHANNEL_1, 50);
-    HAL_Delay(50);
-    __HAL_TIM_SET_COMPARE(&htim2, TIM_CHANNEL_1, 0);
-    HAL_Delay(1000);
+    // __HAL_TIM_SET_COMPARE(&htim2, TIM_CHANNEL_1, 50);
+    // HAL_Delay(50);
+    // __HAL_TIM_SET_COMPARE(&htim2, TIM_CHANNEL_1, 0);
+    // HAL_Delay(1000);
 
     // FAN motor Debug
     // __HAL_TIM_SET_COMPARE(&htim8, TIM_CHANNEL_1, 500);
@@ -390,6 +392,40 @@ int main(void)
     // printf("%f \r\n", theta);
     // HAL_Delay(50);
 
+    // Push switch and LED
+    if (HAL_GPIO_ReadPin(GPIOB, GPIO_PIN_2) == 0)
+    {
+      count++;
+      if (count > 200)
+      {
+        SW_read++;
+        if (SW_read > 3)
+        {
+          SW_read = 0;
+        }
+        count = 0;
+      }
+    }
+      if (SW_read == 0)
+      {
+        HAL_GPIO_WritePin(GPIOC, GPIO_PIN_8, GPIO_PIN_RESET);
+        HAL_GPIO_WritePin(GPIOC, GPIO_PIN_9, GPIO_PIN_RESET);
+      }
+      else if (SW_read == 1)
+      {
+        HAL_GPIO_WritePin(GPIOC, GPIO_PIN_8, GPIO_PIN_SET);
+        HAL_GPIO_WritePin(GPIOC, GPIO_PIN_9, GPIO_PIN_RESET);
+      }
+      else if (SW_read == 2)
+      {
+        HAL_GPIO_WritePin(GPIOC, GPIO_PIN_8, GPIO_PIN_RESET);
+        HAL_GPIO_WritePin(GPIOC, GPIO_PIN_9, GPIO_PIN_SET);
+      }
+      else
+      {
+        HAL_GPIO_WritePin(GPIOC, GPIO_PIN_8, GPIO_PIN_SET);
+        HAL_GPIO_WritePin(GPIOC, GPIO_PIN_9, GPIO_PIN_SET);
+      }
   }
   /* USER CODE END 3 */
 }
