@@ -330,66 +330,29 @@ int main(void)
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
-    //LED Debug
-    /*
-    if (HAL_GPIO_ReadPin(GPIOB, GPIO_PIN_2) == 0)
-    {
-      HAL_GPIO_WritePin(GPIOC, GPIO_PIN_7, GPIO_PIN_SET);
-      HAL_GPIO_WritePin(GPIOC, GPIO_PIN_8, GPIO_PIN_SET);
-      HAL_GPIO_WritePin(GPIOC, GPIO_PIN_9, GPIO_PIN_SET);
-      HAL_GPIO_WritePin(GPIOB, GPIO_PIN_13, GPIO_PIN_SET);
-      HAL_GPIO_WritePin(GPIOB, GPIO_PIN_14, GPIO_PIN_SET);
-      HAL_GPIO_WritePin(GPIOB, GPIO_PIN_15, GPIO_PIN_SET);
-    }
-    // HAL_Delay(2000);
-    else
-    {
-      HAL_GPIO_WritePin(GPIOC, GPIO_PIN_7, GPIO_PIN_RESET);
-      HAL_GPIO_WritePin(GPIOC, GPIO_PIN_8, GPIO_PIN_RESET);
-      HAL_GPIO_WritePin(GPIOC, GPIO_PIN_9, GPIO_PIN_RESET);
-      HAL_GPIO_WritePin(GPIOB, GPIO_PIN_13, GPIO_PIN_RESET);
-      HAL_GPIO_WritePin(GPIOB, GPIO_PIN_14, GPIO_PIN_RESET);
-      HAL_GPIO_WritePin(GPIOB, GPIO_PIN_15, GPIO_PIN_RESET);
-    }*/
-    // HAL_Delay(2000);
 
     //DC Motor Debug
-    /*__HAL_TIM_SET_COMPARE(&htim5, TIM_CHANNEL_1, 150);
-    __HAL_TIM_SET_COMPARE(&htim5, TIM_CHANNEL_4, 150);
-    HAL_Delay(2000);
-    __HAL_TIM_SET_COMPARE(&htim5, TIM_CHANNEL_1, 0);
-    __HAL_TIM_SET_COMPARE(&htim5, TIM_CHANNEL_4, 0);
-    HAL_Delay(2000);*/
+    // __HAL_TIM_SET_COMPARE(&htim5, TIM_CHANNEL_1, 200);
+    // __HAL_TIM_SET_COMPARE(&htim5, TIM_CHANNEL_3, 200);
 
     //Encoder Debug
     /*countL_int = read_encoderL_value();
     printf("Encoder_L: %d\n\r", countL_int);
     HAL_Delay(100);*/
 
-    //Speaker Debug
-    /*__HAL_TIM_SET_COMPARE(&htim2, TIM_CHANNEL_1, 400);
-    HAL_Delay(50);
-    __HAL_TIM_SET_COMPARE(&htim2, TIM_CHANNEL_1, 0);
-    HAL_Delay(1000);*/
-
-    // FAN motor Debug
-    __HAL_TIM_SET_COMPARE(&htim8, TIM_CHANNEL_1, 500);
-    HAL_Delay(2000);
-    // __HAL_TIM_SET_COMPARE(&htim8, TIM_CHANNEL_1, 0);
-    // HAL_Delay(2000);
-
-    //Infrared Radiation LED Debug
-    // __HAL_TIM_SET_COMPARE(&htim10, TIM_CHANNEL_1, 20);
-    // __HAL_TIM_SET_COMPARE(&htim11, TIM_CHANNEL_1, 20);
-    // read_IR_outer_value();
-    // read_IR_inner_value();
-
     // MPU-6500 Debug
     // printf("%f \r\n", mpu6500_read_gyro_z() - gyro_z_offset_data);
-    // theta += (mpu6500_read_gyro_z() - gyro_z_offset_data) * 0.05;
+    theta += (mpu6500_read_gyro_z() - gyro_z_offset_data) * 0.05;
     // printf("%f \r\n", theta);
-    // HAL_Delay(50);
+    HAL_Delay(50);
 
+    if (theta > 90)
+    {
+      __HAL_TIM_SET_COMPARE(&htim5, TIM_CHANNEL_1, 0);
+      __HAL_TIM_SET_COMPARE(&htim5, TIM_CHANNEL_3, 0);
+      HAL_Delay(2000);
+      theta = 0;
+    }
   }
   /* USER CODE END 3 */
 }
