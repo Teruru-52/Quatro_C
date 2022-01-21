@@ -145,7 +145,7 @@ void mpu6500_init(void)
   printf("0x%x\r\n", read_byte(0x1B));
 }
 
-float mpu6500_read_gyro_z(void) //floatをvoidに変更??��?��返り値なし�?
+float mpu6500_read_gyro_z(void) //floatをvoidに変更
 {
   int16_t gyro_z;
   float omega;
@@ -388,9 +388,9 @@ int main(void)
 
     // MPU-6500 Debug
     // printf("%f \r\n", mpu6500_read_gyro_z() - gyro_z_offset_data);
-    // theta += (mpu6500_read_gyro_z() - gyro_z_offset_data) * 0.05;
-    // printf("%f \r\n", theta);
-    // HAL_Delay(50);
+    theta += (mpu6500_read_gyro_z() - gyro_z_offset_data) * 0.05;
+    printf("theta = %f \r\n", theta);
+    HAL_Delay(50);
 
     // Push switch and LED
     // if (HAL_GPIO_ReadPin(GPIOB, GPIO_PIN_2) == 0)
