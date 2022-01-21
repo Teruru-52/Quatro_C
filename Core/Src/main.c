@@ -54,6 +54,7 @@ TIM_HandleTypeDef htim2;
 TIM_HandleTypeDef htim3;
 TIM_HandleTypeDef htim4;
 TIM_HandleTypeDef htim5;
+TIM_HandleTypeDef htim6;
 TIM_HandleTypeDef htim8;
 TIM_HandleTypeDef htim10;
 TIM_HandleTypeDef htim11;
@@ -82,6 +83,7 @@ static void MX_TIM5_Init(void);
 static void MX_TIM8_Init(void);
 static void MX_USART1_UART_Init(void);
 static void MX_ADC2_Init(void);
+static void MX_TIM6_Init(void);
 /* USER CODE BEGIN PFP */
 
 /* USER CODE END PFP */
@@ -145,7 +147,9 @@ void mpu6500_init(void)
   // printf("0x%x\r\n", read_byte(0x1B));
 }
 
-float mpu6500_read_gyro_z(void) //floatをvoidに変更（返り値なし）
+int counter = 0;
+
+float mpu6500_read_gyro_z(void) //floatをvoidに変更??��?��返り値なし�?
 {
   int16_t gyro_z;
   float omega;
@@ -154,6 +158,11 @@ float mpu6500_read_gyro_z(void) //floatをvoidに変更（返り値なし）
   gyro_z = (int16_t)(((uint16_t)read_byte(0x47) << 8) | (uint16_t)read_byte(0x48));
   //printf("%d\r\n", gyro_z);
   omega = (float)(gyro_z / 16.4); // dps to deg/sec
+
+counter = (counter + 1) % (10 * 1000);
+    if(counter == 0) HAL_GPIO_WritePin(GPIOC, GPIO_PIN_8, GPIO_PIN_SET);
+    else HAL_GPIO_WritePin(GPIOC, GPIO_PIN_8, GPIO_PIN_RESET);
+
   return omega;
 }
 
@@ -217,16 +226,12 @@ void read_IR_inner_value(void){
 uint32_t IR_BL = 0;
 uint32_t IR_BR = 0;
 uint16_t dma_b[2];
-int counter = 0;
 
 void read_IR_outer_value(void){
   HAL_ADC_Start_DMA(&hadc2, (uint32_t*)dma_b, 2);
 
   IR_BL = dma_b[0];
   IR_BR = dma_b[1];
-  counter = (counter + 1) % (10 * 1000);
-        if(counter == 0) HAL_GPIO_WritePin(GPIOC, GPIO_PIN_8, GPIO_PIN_SET);
-        else HAL_GPIO_WritePin(GPIOC, GPIO_PIN_8, GPIO_PIN_RESET);
   if (IR_BL > 2100)
   {
     HAL_GPIO_WritePin(GPIOC, GPIO_PIN_7, GPIO_PIN_SET);
@@ -246,18 +251,57 @@ void read_IR_outer_value(void){
   //printf("IR_BL: %d, IR_BR: %d\n\r", IR_BL, IR_BR);
 }
 
+float yaw_ref = 0.0;
+float pre_error = 0.0;
+float sum_error = 0.0;
+float kp_angle = 20.0;
+float ki_angle = 0.0;
+float kd_angle = 0.0;
 
-// int counter = 0;
-/*void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
+void angle_control(float yaw){
+  float error = yaw_ref - yaw;
+  sum_error += error;
+  int u = kp_angle*error + ki_angle*sum_error*0.001 + kd_angle*(pre_error - error)*1000.0;
+  if(u > 0){
+    __HAL_TIM_SET_COMPARE(&htim5, TIM_CHANNEL_1, 150+u);
+    __HAL_TIM_SET_COMPARE(&htim5, TIM_CHANNEL_2, 0);
+    __HAL_TIM_SET_COMPARE(&htim5, TIM_CHANNEL_3, 150+u);
+    __HAL_TIM_SET_COMPARE(&htim5, TIM_CHANNEL_4, 0);
+  }
+  else{
+    __HAL_TIM_SET_COMPARE(&htim5, TIM_CHANNEL_1, 0);
+    __HAL_TIM_SET_COMPARE(&htim5, TIM_CHANNEL_2, -u+150);
+    __HAL_TIM_SET_COMPARE(&htim5, TIM_CHANNEL_3, 0);
+    __HAL_TIM_SET_COMPARE(&htim5, TIM_CHANNEL_4, -u+150);
+  }
+  pre_error = error;
+}
+
+float theta = 0;
+int cnt = 0;
+int cnt1kHz = 0;
+void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 {
-    if (htim == &htim1){
-        // counter = (counter + 1) % (10 * 1000);
-        // if(counter == 0) HAL_GPIO_WritePin(GPIOC, GPIO_PIN_8, GPIO_PIN_SET);
-        // else HAL_GPIO_WritePin(GPIOC, GPIO_PIN_8, GPIO_PIN_RESET);
-        read_IR_outer_value();
-        read_IR_inner_value();
+  if (htim == &htim1)
+  {
+    cnt = (cnt + 1) % 16;
+    if (cnt == 0)
+    {
+      theta += (mpu6500_read_gyro_z() - gyro_z_offset_data) * 0.001;
+      angle_control(theta);
+      cnt1kHz = (cnt1kHz + 1) % 1000;
+      if (cnt1kHz == 0){
+        HAL_GPIO_WritePin(GPIOC, GPIO_PIN_8, GPIO_PIN_SET);
+      }
+      else
+        HAL_GPIO_WritePin(GPIOC, GPIO_PIN_8, GPIO_PIN_RESET);
+      // if (cnt1kHz % 200 == 0)
+      // {
+      //   printf("%f \r\n", theta);
+      // }
     }
-}*/
+  }
+}
 /* USER CODE END 0 */
 
 /**
@@ -302,6 +346,7 @@ int main(void)
   MX_TIM8_Init();
   MX_USART1_UART_Init();
   MX_ADC2_Init();
+  MX_TIM6_Init();
   /* USER CODE BEGIN 2 */
   setbuf(stdout, NULL);
   HAL_TIM_Base_Start_IT(&htim1);
@@ -318,6 +363,7 @@ int main(void)
   HAL_TIM_PWM_Start(&htim5, TIM_CHANNEL_2);
   HAL_TIM_PWM_Start(&htim5, TIM_CHANNEL_3);
   HAL_TIM_PWM_Start(&htim5, TIM_CHANNEL_4);
+  HAL_TIM_Base_Start_IT(&htim6);
   HAL_TIM_PWM_Start(&htim8, TIM_CHANNEL_1);
   HAL_TIM_PWM_Start(&htim10, TIM_CHANNEL_1);
   HAL_TIM_PWM_Start(&htim11, TIM_CHANNEL_1);
@@ -342,17 +388,17 @@ int main(void)
 
     // MPU-6500 Debug
     // printf("%f \r\n", mpu6500_read_gyro_z() - gyro_z_offset_data);
-    theta += (mpu6500_read_gyro_z() - gyro_z_offset_data) * 0.05;
+    // theta += (mpu6500_read_gyro_z() - gyro_z_offset_data) * 0.05;
     // printf("%f \r\n", theta);
-    HAL_Delay(50);
+    // HAL_Delay(50);
 
-    if (theta > 90)
-    {
-      __HAL_TIM_SET_COMPARE(&htim5, TIM_CHANNEL_1, 0);
-      __HAL_TIM_SET_COMPARE(&htim5, TIM_CHANNEL_3, 0);
-      HAL_Delay(2000);
-      theta = 0;
-    }
+    // if (theta > 90)
+    // {
+    //   __HAL_TIM_SET_COMPARE(&htim5, TIM_CHANNEL_1, 0);
+    //   __HAL_TIM_SET_COMPARE(&htim5, TIM_CHANNEL_3, 0);
+    //   HAL_Delay(2000);
+    //   theta = 0;
+    // }
   }
   /* USER CODE END 3 */
 }
@@ -816,6 +862,44 @@ static void MX_TIM5_Init(void)
 
   /* USER CODE END TIM5_Init 2 */
   HAL_TIM_MspPostInit(&htim5);
+
+}
+
+/**
+  * @brief TIM6 Initialization Function
+  * @param None
+  * @retval None
+  */
+static void MX_TIM6_Init(void)
+{
+
+  /* USER CODE BEGIN TIM6_Init 0 */
+
+  /* USER CODE END TIM6_Init 0 */
+
+  TIM_MasterConfigTypeDef sMasterConfig = {0};
+
+  /* USER CODE BEGIN TIM6_Init 1 */
+
+  /* USER CODE END TIM6_Init 1 */
+  htim6.Instance = TIM6;
+  htim6.Init.Prescaler = 48;
+  htim6.Init.CounterMode = TIM_COUNTERMODE_UP;
+  htim6.Init.Period = 1000-1;
+  htim6.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_DISABLE;
+  if (HAL_TIM_Base_Init(&htim6) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  sMasterConfig.MasterOutputTrigger = TIM_TRGO_RESET;
+  sMasterConfig.MasterSlaveMode = TIM_MASTERSLAVEMODE_DISABLE;
+  if (HAL_TIMEx_MasterConfigSynchronization(&htim6, &sMasterConfig) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  /* USER CODE BEGIN TIM6_Init 2 */
+
+  /* USER CODE END TIM6_Init 2 */
 
 }
 
