@@ -55,7 +55,9 @@ Core/Src/system_stm32f4xx.c \
 Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_adc.c \
 Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_adc_ex.c \
 Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_ll_adc.c \
-Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_uart.c
+Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_uart.c \
+Core/Src/gyro.c \
+Core/Src/syscalls.c
 
 # ASM sources
 ASM_SOURCES =  \
@@ -104,7 +106,8 @@ AS_DEFS =
 # C defines
 C_DEFS =  \
 -DUSE_HAL_DRIVER \
--DSTM32F405xx
+-DSTM32F405xx \
+-DARM_MATH_CM4 
 
 
 # AS includes
@@ -140,8 +143,8 @@ CFLAGS += -MMD -MP -MF"$(@:%.o=%.d)"
 LDSCRIPT = STM32F405RGTx_FLASH.ld
 
 # libraries
-LIBS = -lc -lm -lnosys 
-LIBDIR = 
+LIBS = -lc -lm -lnosys -larm_cortexM4lf_math
+LIBDIR = -L Drivers/CMSIS/Lib/GCC/
 LDFLAGS = $(MCU) -specs=nano.specs -T$(LDSCRIPT) $(LIBDIR) $(LIBS) -Wl,-Map=$(BUILD_DIR)/$(TARGET).map,--cref -Wl,--gc-sections  -u _printf_float
 
 # default action: build all
