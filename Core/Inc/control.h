@@ -13,11 +13,14 @@
 
 #define YAW_REF 0
 
-typedef struct
-{
-    float ts;
-} Control_Typedef;
+// typedef struct
+// {
+//     float pre_error, pre_error2;
+//     float sum_error, sum_error2;
+//     float angular_vel_ref;
+// } Control_Typedef;
 
+// void PIDReset(Control_Typedef *pid);
 void AngleControl(Gyro_Typedef *gyro);
 void AngularVelocityControl(Gyro_Typedef *gyro);
 

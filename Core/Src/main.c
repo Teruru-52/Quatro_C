@@ -72,18 +72,18 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 {
   if (flag_offset == true)
   {
-    if (htim == &htim1) //タイマー割込み16kHz
+    if (htim == &htim1) //タイマ�?�割込み16kHz
     {
       ReadFrontIRSensor(&ir_sensor);
       ReadBackIRSensor(&ir_sensor);
       cnt16kHz = (cnt16kHz + 1) % 16;
-      if (cnt16kHz == 0) //タイマー割込み1kHz
+      if (cnt16kHz == 0) //タイマ�?�割込み1kHz
       {
         // angle_control(theta);
         GetGyroZ(&gyro_z);
         GetYaw(&gyro_z);
         cnt1kHz = (cnt1kHz + 1) % 1000;
-        if (cnt1kHz % 10 == 0){ //タイマー割込み100Hz
+        if (cnt1kHz % 10 == 0){ //タイマ�?�割込み100Hz
           cnt100Hz = (cnt100Hz + 1) % 100;
           // GetEncoderL(&encoder_LR);
           // GetEncoderR(&encoder_LR);

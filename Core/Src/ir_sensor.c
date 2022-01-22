@@ -1,6 +1,5 @@
-#include "ir_sensor.h"
+#include "main.h"
 #include "adc.h"
-#include "stm32f4xx_hal.h"
 
 uint16_t dma_f[2];
 

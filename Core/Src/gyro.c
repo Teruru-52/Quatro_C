@@ -1,8 +1,6 @@
-#include "gyro.h"
+#include "main.h"
 #include "spi.h"
 #include "tim.h"
-#include "stm32f4xx_hal.h"
-#include <string.h>
 #include <stdio.h>
 #include <stdint.h>
 #include <stdbool.h>

@@ -1,8 +1,5 @@
-#include "gyro.h"
-#include "encoder.h"
-#include "control.h"
+#include "main.h"
 #include "tim.h"
-#include "stm32f4xx_hal.h"
 
 static float pre_error = 0.0;
 static float sum_error = 0.0;

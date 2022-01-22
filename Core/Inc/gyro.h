@@ -31,7 +31,4 @@ void GyroOffsetCalc();
 void GetGyroZ(Gyro_Typedef *gyro);
 void GetYaw(Gyro_Typedef *gyro);
 
-// void AngleControl(Gyro_Typedef *gyro);
-// void AngularVelocityControl(Gyro_Typedef *gyro);
-
 #endif // _GYRO_H_
