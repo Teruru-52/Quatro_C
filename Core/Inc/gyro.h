@@ -1,6 +1,7 @@
 #ifndef _GYRO_H_
 #define _GYRO_H_
 #include "main.h"
+
 #define ADDRESS           0x68
 #define WHO_AM_I          0x75
 
@@ -28,7 +29,7 @@ typedef struct{
 uint8_t read_byte(uint8_t reg);
 void write_byte(uint8_t reg, uint8_t data);
 void GyroInit();
-void GyroOffsetCalc(Gyro_Typedef *gyro);
+void GyroOffsetCalc();
 void GetGyroZ(Gyro_Typedef *gyro);
 void GetYaw(Gyro_Typedef *gyro);
 

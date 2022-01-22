@@ -4,9 +4,10 @@
 #include <stdio.h>
 #include <stdint.h>
 
-float gyro_offset;
+extern SPI_HandleTypeDef hspi1;
+
+static float gyro_offset;
 float yaw = 0;
-int counter = 0;
 
 uint8_t read_byte(uint8_t reg)
 {
@@ -42,7 +43,7 @@ void GyroInit()
     uint8_t who_am_i;
     HAL_Delay(100);             // wait start up
     who_am_i = read_byte(WHO_AM_I); // read who am i
-    // printf("who_am_i = 0x%x\r\n",who_am_i); // check who am i value
+    printf("who_am_i = 0x%x\r\n",who_am_i); // check who am i value
     // error check
     if (who_am_i != 0x70)
     {
@@ -60,16 +61,22 @@ void GyroInit()
     // printf("0x%x\r\n", read_byte(0x1B));
 }
 
-void GyroOffsetCalc(Gyro_Typedef *gyro)
+void GyroOffsetCalc()
 {
+    int16_t gz_raw;
+    float gz;
     float sum = 0;
     for (int i = 0; i < 1000; i++)
     {
-        GetGyroZ(&gyro);
-        sum += gyro->gz;
+        // H:8bit shift, Link h and l
+        gz_raw = (int16_t)(((uint16_t)read_byte(GYRO_ZOUT_H) << 8) | (uint16_t)read_byte(GYRO_ZOUT_L));
+        // printf("%d\r\n", gz_raw);
+        gz = (float)(gz_raw / 16.4); // dps to deg/sec
+        sum += gz;
         HAL_Delay(1);
     }
     gyro_offset = sum / 1000.0;
+    printf("%f\r\n", gyro_offset);
 }
 
 void GetGyroZ(Gyro_Typedef *gyro)
@@ -79,14 +86,14 @@ void GetGyroZ(Gyro_Typedef *gyro)
 
     // H:8bit shift, Link h and l
     gz_raw = (int16_t)(((uint16_t)read_byte(GYRO_ZOUT_H) << 8) | (uint16_t)read_byte(GYRO_ZOUT_L));
-    // printf("%d\r\n", gyro_z);
+    // printf("%d\r\n", gz_raw);
     gz = (float)(gz_raw / 16.4); // dps to deg/sec
 
     gyro->gz = gz - gyro_offset;
 }
 
 void GetYaw(Gyro_Typedef *gyro){
-    yaw += gyro->gz * 0.001;
+    yaw += gyro->gz * 0.05;
 
     gyro->yaw = yaw;
 }

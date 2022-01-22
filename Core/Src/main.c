@@ -19,7 +19,6 @@
 /* USER CODE END Header */
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
-#include "gyro.h"
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
@@ -91,6 +90,11 @@ static void MX_TIM6_Init(void);
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
+int _write(int file, char *ptr, int len)
+{
+  HAL_UART_Transmit(&huart1,(uint8_t *)ptr,len,10);
+  return len;
+}
 int16_t read_encoderL_value(void)
 {
   // int16_t enc_buff = (int16_t)TIM3->CNT;
@@ -192,34 +196,34 @@ void angle_control(float yaw){
   pre_error = error;
 }
 
-float theta = 0;
-int cnt = 0;
-int cnt1kHz = 0;
-void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
-{
-  if (htim == &htim1)
-  {
-    cnt = (cnt + 1) % 16;
-    if (cnt == 0)
-    {
-      // theta += (mpu6500_read_gyro_z() - gyro_z_offset_data) * 0.001;
-      // angle_control(theta);
-      cnt1kHz = (cnt1kHz + 1) % 1000;
-      if (cnt1kHz == 0){
-        GetGyroZ(&gyro_z);
-        GetYaw(&gyro_z);
-      //   HAL_GPIO_WritePin(GPIOC, GPIO_PIN_8, GPIO_PIN_SET);
-      }
-      // else
-      //   HAL_GPIO_WritePin(GPIOC, GPIO_PIN_8, GPIO_PIN_RESET);
+// float theta = 0;
+// int cnt = 0;
+// int cnt1kHz = 0;
+// void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
+// {
+//   if (htim == &htim1)
+//   {
+//     cnt = (cnt + 1) % 16;
+//     if (cnt == 0)
+//     {
+//       // theta += (mpu6500_read_gyro_z() - gyro_z_offset_data) * 0.001;
+//       // angle_control(theta);
+//       cnt1kHz = (cnt1kHz + 1) % 1000;
+//       if (cnt1kHz == 0){
+//         GetGyroZ(&gyro_z);
+//         GetYaw(&gyro_z);
+//       //   HAL_GPIO_WritePin(GPIOC, GPIO_PIN_8, GPIO_PIN_SET);
+//       }
+//       // else
+//       //   HAL_GPIO_WritePin(GPIOC, GPIO_PIN_8, GPIO_PIN_RESET);
 
-      if (cnt1kHz % 200 == 0)
-      {
-        printf("%f \r\n", &gyro_z.yaw);
-      }
-    }
-  }
-}
+//       if (cnt1kHz % 200 == 0)
+//       {
+//         printf("%f \r\n", &gyro_z.yaw);
+//       }
+//     }
+//   }
+// }
 /* USER CODE END 0 */
 
 /**
@@ -275,7 +279,7 @@ int main(void)
   // int32_t countL_int = 0;
   // float theta = 0;
   GyroInit(); //who_am_i
-  GyroOffsetCalc(&gyro_z);
+  GyroOffsetCalc();
   //int16_t countR_int = 0;
   HAL_TIM_PWM_Start(&htim5, TIM_CHANNEL_1);
   HAL_TIM_PWM_Start(&htim5, TIM_CHANNEL_2);
@@ -294,6 +298,11 @@ int main(void)
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
+
+    GetGyroZ(&gyro_z);
+    GetYaw(&gyro_z);
+    printf("%f\r\n", gyro_z.yaw);
+    HAL_Delay(50);
 
     //DC Motor Debug
     // __HAL_TIM_SET_COMPARE(&htim5, TIM_CHANNEL_1, 200);
