@@ -28,7 +28,7 @@ typedef struct{
 uint8_t read_byte(uint8_t reg);
 void write_byte(uint8_t reg, uint8_t data);
 void GyroInit();
-void GyroOffsetCalc();
+void GyroOffsetCalc(Gyro_Typedef *gyro);
 void GetGyroZ(Gyro_Typedef *gyro);
 void GetYaw(Gyro_Typedef *gyro);
 

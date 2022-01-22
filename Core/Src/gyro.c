@@ -1,4 +1,5 @@
 #include "gyro.h"
+#include "stm32f4xx_hal.h"
 #include <string.h>
 #include <stdio.h>
 #include <stdint.h>
@@ -59,12 +60,13 @@ void GyroInit()
     // printf("0x%x\r\n", read_byte(0x1B));
 }
 
-void GyroOffsetCalc()
+void GyroOffsetCalc(Gyro_Typedef *gyro)
 {
     float sum = 0;
     for (int i = 0; i < 1000; i++)
     {
-        sum += GetYawVelocity();
+        GetGyroZ(&gyro);
+        sum += gyro->gz;
         HAL_Delay(1);
     }
     gyro_offset = sum / 1000.0;
@@ -79,12 +81,6 @@ void GetGyroZ(Gyro_Typedef *gyro)
     gz_raw = (int16_t)(((uint16_t)read_byte(GYRO_ZOUT_H) << 8) | (uint16_t)read_byte(GYRO_ZOUT_L));
     // printf("%d\r\n", gyro_z);
     gz = (float)(gz_raw / 16.4); // dps to deg/sec
-
-    counter = (counter + 1) % (10 * 1000);
-    if (counter == 0)
-        HAL_GPIO_WritePin(GPIOC, GPIO_PIN_8, GPIO_PIN_SET);
-    else
-        HAL_GPIO_WritePin(GPIOC, GPIO_PIN_8, GPIO_PIN_RESET);
 
     gyro->gz = gz - gyro_offset;
 }
