@@ -63,7 +63,8 @@ Core/Src/adc.c \
 Core/Src/dma.c \
 Core/Src/spi.c \
 Core/Src/tim.c \
-Core/Src/usart.c
+Core/Src/usart.c \
+Core/Src/encoder.c
 
 # ASM sources
 ASM_SOURCES =  \

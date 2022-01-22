@@ -37,6 +37,7 @@
 /* Private typedef -----------------------------------------------------------*/
 /* USER CODE BEGIN PTD */
 Gyro_Typedef gyro_z;
+Encoder_Typedef encoder_LR;
 /* USER CODE END PTD */
 
 /* Private define ------------------------------------------------------------*/
@@ -62,23 +63,6 @@ void SystemClock_Config(void);
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
-int16_t read_encoderL_value(void)
-{
-  // int16_t enc_buff = (int16_t)TIM3->CNT;
-  // TIM3->CNT = 0;
-  // return enc_buff;
-  int16_t count = 0;
-  uint16_t enc_buff = TIM3->CNT;
-  TIM3->CNT = 0;
-  if( enc_buff > 32767 ){
-    count = (int16_t)enc_buff*-1;
-  } else {
-    count = (int16_t)enc_buff;
-  }
-
-  return count;
-}
-
 uint32_t IR_FL = 0;
 uint32_t IR_FR = 0;
 uint16_t dma_f[2];
@@ -166,6 +150,7 @@ void angle_control(float yaw){
 extern bool flag_offset;
 int cnt = 0;
 int cnt1kHz = 0;
+int cnt100Hz = 0;
 void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 {
   if (flag_offset == true)
@@ -179,7 +164,12 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
         GetGyroZ(&gyro_z);
         GetYaw(&gyro_z);
         cnt1kHz = (cnt1kHz + 1) % 1000;
-        if (cnt1kHz == 0)
+        if (cnt1kHz % 10 == 0){
+          cnt100Hz = (cnt100Hz + 1) % 100;
+          GetEncoderL(&encoder_LR);
+          GetEncoderR(&encoder_LR);
+        }
+        if (cnt100Hz == 0)
         {
           HAL_GPIO_WritePin(GPIOC, GPIO_PIN_8, GPIO_PIN_SET);
         }
@@ -188,7 +178,8 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 
         if (cnt1kHz % 200 == 0)
         {
-          printf("%f \r\n", gyro_z.yaw);
+          // printf("%f \r\n", gyro_z.yaw);
+          printf("%d, %d \r\n", encoder_LR.countL, encoder_LR.countR);
         }
       }
     }

@@ -33,6 +33,7 @@ extern "C" {
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 #include "gyro.h"
+#include "encoder.h"
 /* USER CODE END Includes */
 
 /* Exported types ------------------------------------------------------------*/
