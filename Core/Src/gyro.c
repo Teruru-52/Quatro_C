@@ -1,11 +1,15 @@
-#include "gyro.h"
-#include <string.h>
+#include "main.h"
+#include "spi.h"
+#include "tim.h"
 #include <stdio.h>
 #include <stdint.h>
+#include <stdbool.h>
 
-float gyro_offset;
-float yaw = 0;
-int counter = 0;
+static float gyro_offset;
+static float yaw = 0;
+bool flag_offset = false;
+
+static float gyro_y_pre[4], gyro_x_pre[4];
 
 uint8_t read_byte(uint8_t reg)
 {
@@ -36,6 +40,15 @@ void write_byte(uint8_t reg, uint8_t data)
   HAL_GPIO_WritePin(GPIOA, GPIO_PIN_4, SET); //CSピン立ち上げ
 }
 
+void IIRInit()
+{
+    for (int i = 0; i < 4; i++)
+    {
+        gyro_y_pre[i] = 0;
+        gyro_x_pre[i] = 0;
+    }
+}
+
 void GyroInit()
 {
     uint8_t who_am_i;
@@ -61,13 +74,27 @@ void GyroInit()
 
 void GyroOffsetCalc()
 {
+    int16_t gz_raw;
+    float gz;
     float sum = 0;
     for (int i = 0; i < 1000; i++)
     {
-        sum += GetYawVelocity();
+        // H:8bit shift, Link h and l
+        gz_raw = (int16_t)(((uint16_t)read_byte(GYRO_ZOUT_H) << 8) | (uint16_t)read_byte(GYRO_ZOUT_L));
+        // printf("%d\r\n", gz_raw);
+        gz = (float)(gz_raw / 16.4); // dps to deg/sec
+        sum += gz;
         HAL_Delay(1);
     }
     gyro_offset = sum / 1000.0;
+    // printf("%f\r\n", gyro_offset);
+
+    // Speaker
+    __HAL_TIM_SET_COMPARE(&htim2, TIM_CHANNEL_1, 10);
+    HAL_Delay(50);
+    __HAL_TIM_SET_COMPARE(&htim2, TIM_CHANNEL_1, 0);
+
+    flag_offset = true;
 }
 
 void GetGyroZ(Gyro_Typedef *gyro)
@@ -77,16 +104,22 @@ void GetGyroZ(Gyro_Typedef *gyro)
 
     // H:8bit shift, Link h and l
     gz_raw = (int16_t)(((uint16_t)read_byte(GYRO_ZOUT_H) << 8) | (uint16_t)read_byte(GYRO_ZOUT_L));
-    // printf("%d\r\n", gyro_z);
+    // printf("%d\r\n", gz_raw);
     gz = (float)(gz_raw / 16.4); // dps to deg/sec
 
-    counter = (counter + 1) % (10 * 1000);
-    if (counter == 0)
-        HAL_GPIO_WritePin(GPIOC, GPIO_PIN_8, GPIO_PIN_SET);
-    else
-        HAL_GPIO_WritePin(GPIOC, GPIO_PIN_8, GPIO_PIN_RESET);
+    float filtered_gyro_z = gyro_fil_coeff.b0*gz + gyro_fil_coeff.b1*gyro_x_pre[0] + gyro_fil_coeff.b2*gyro_x_pre[1]
+                                                    + gyro_fil_coeff.a1*gyro_y_pre[0] + gyro_fil_coeff.a2*gyro_y_pre[1];
 
-    gyro->gz = gz - gyro_offset;
+    // Shift IIR filter state
+    for (int i = 1; i > 0; i--)
+    {
+        gyro_x_pre[i] = gyro_x_pre[i - 1];
+        gyro_y_pre[i] = gyro_y_pre[i - 1];
+    }
+    gyro_x_pre[0] = gz;
+    gyro_y_pre[0] = filtered_gyro_z;
+
+    gyro->gz = filtered_gyro_z - gyro_offset;
 }
 
 void GetYaw(Gyro_Typedef *gyro){

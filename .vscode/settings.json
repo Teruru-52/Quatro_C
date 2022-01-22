@@ -2,6 +2,13 @@
     "files.associations": {
         "main.h": "c",
         "stdio.h": "c",
-        "string.h": "c"
+        "string.h": "c",
+        "stm32f4xx_hal.h": "c",
+        "spi.h": "c",
+        "control.h": "c",
+        "gyro.h": "c",
+        "tim.h": "c",
+        "stdint.h": "c",
+        "usart.h": "c"
     }
 }

@@ -33,6 +33,9 @@ extern "C" {
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 #include "gyro.h"
+#include "encoder.h"
+#include "control.h"
+#include "ir_sensor.h"
 /* USER CODE END Includes */
 
 /* Exported types ------------------------------------------------------------*/
@@ -49,8 +52,6 @@ extern "C" {
 /* USER CODE BEGIN EM */
 
 /* USER CODE END EM */
-
-void HAL_TIM_MspPostInit(TIM_HandleTypeDef *htim);
 
 /* Exported functions prototypes ---------------------------------------------*/
 void Error_Handler(void);
