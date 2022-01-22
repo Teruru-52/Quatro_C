@@ -72,18 +72,18 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 {
   if (flag_offset == true)
   {
-    if (htim == &htim1) //タイマ�?�割込み16kHz
+    if (htim == &htim1) //割込み16kHz
     {
       ReadFrontIRSensor(&ir_sensor);
       ReadBackIRSensor(&ir_sensor);
       cnt16kHz = (cnt16kHz + 1) % 16;
-      if (cnt16kHz == 0) //タイマ�?�割込み1kHz
+      if (cnt16kHz == 0) //割込み1kHz
       {
         // angle_control(theta);
         GetGyroZ(&gyro_z);
         GetYaw(&gyro_z);
         cnt1kHz = (cnt1kHz + 1) % 1000;
-        if (cnt1kHz % 10 == 0){ //タイマ�?�割込み100Hz
+        if (cnt1kHz % 10 == 0){ //割込み100Hz
           cnt100Hz = (cnt100Hz + 1) % 100;
           // GetEncoderL(&encoder_LR);
           // GetEncoderR(&encoder_LR);
@@ -159,7 +159,9 @@ int main(void)
   HAL_TIM_Encoder_Start(&htim3, TIM_CHANNEL_ALL);
   HAL_TIM_Encoder_Start(&htim4, TIM_CHANNEL_ALL);
   GyroInit(); //who_am_i
+  IIRInit();
   GyroOffsetCalc();
+  IIRInit();
   HAL_TIM_PWM_Start(&htim5, TIM_CHANNEL_1);
   HAL_TIM_PWM_Start(&htim5, TIM_CHANNEL_2);
   HAL_TIM_PWM_Start(&htim5, TIM_CHANNEL_3);

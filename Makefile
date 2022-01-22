@@ -66,7 +66,8 @@ Core/Src/tim.c \
 Core/Src/usart.c \
 Core/Src/encoder.c \
 Core/Src/control.c \
-Core/Src/ir_sensor.c
+Core/Src/ir_sensor.c \
+Core/Src/iir_filter.c
 
 # ASM sources
 ASM_SOURCES =  \
