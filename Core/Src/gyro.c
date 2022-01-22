@@ -1,5 +1,6 @@
 #include "gyro.h"
 #include "spi.h"
+#include "tim.h"
 #include "stm32f4xx_hal.h"
 #include <string.h>
 #include <stdio.h>
@@ -42,7 +43,7 @@ void GyroInit()
     uint8_t who_am_i;
     HAL_Delay(100);             // wait start up
     who_am_i = read_byte(WHO_AM_I); // read who am i
-    printf("who_am_i = 0x%x\r\n",who_am_i); // check who am i value
+    // printf("who_am_i = 0x%x\r\n",who_am_i); // check who am i value
     // error check
     if (who_am_i != 0x70)
     {
@@ -75,7 +76,13 @@ void GyroOffsetCalc()
         HAL_Delay(1);
     }
     gyro_offset = sum / 1000.0;
-    printf("%f\r\n", gyro_offset);
+    // printf("%f\r\n", gyro_offset);
+
+    // Speaker
+    __HAL_TIM_SET_COMPARE(&htim2, TIM_CHANNEL_1, 10);
+    HAL_Delay(50);
+    __HAL_TIM_SET_COMPARE(&htim2, TIM_CHANNEL_1, 0);
+
 }
 
 void GetGyroZ(Gyro_Typedef *gyro)

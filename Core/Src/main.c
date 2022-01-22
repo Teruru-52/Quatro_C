@@ -61,11 +61,6 @@ void SystemClock_Config(void);
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
-int _write(int file, char *ptr, int len)
-{
-  HAL_UART_Transmit(&huart1,(uint8_t *)ptr,len,10);
-  return len;
-}
 int16_t read_encoderL_value(void)
 {
   // int16_t enc_buff = (int16_t)TIM3->CNT;
@@ -272,7 +267,7 @@ int main(void)
 
     GetGyroZ(&gyro_z);
     GetYaw(&gyro_z);
-    printf("%f\r\n", gyro_z.yaw);
+    printf("%f\r\n", gyro_z.gz);
     HAL_Delay(50);
 
     //DC Motor Debug
