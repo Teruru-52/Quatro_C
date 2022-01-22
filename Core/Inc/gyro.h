@@ -1,6 +1,6 @@
 #ifndef _GYRO_H_
 #define _GYRO_H_
-
+#include "main.h"
 #define ADDRESS           0x68
 #define WHO_AM_I          0x75
 
