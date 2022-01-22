@@ -38,6 +38,7 @@
 /* USER CODE BEGIN PTD */
 Gyro_Typedef gyro_z;
 Encoder_Typedef encoder_LR;
+IR_SENSOR_Typedef ir_sensor;
 /* USER CODE END PTD */
 
 /* Private define ------------------------------------------------------------*/
@@ -63,64 +64,6 @@ void SystemClock_Config(void);
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
-uint32_t IR_FL = 0;
-uint32_t IR_FR = 0;
-uint16_t dma_f[2];
-
-void read_IR_inner_value(void){
-  HAL_ADC_Start_DMA(&hadc1, (uint32_t*)dma_f, 2);
-
-  IR_FL = dma_f[0];
-  IR_FR = dma_f[1];
-  // ir[0] = dma[0];
-  // ir[1] = dma[1];
-  if (IR_FL > 2100)
-  {
-    HAL_GPIO_WritePin(GPIOB, GPIO_PIN_15, GPIO_PIN_SET);
-  }
-  else
-  {
-    HAL_GPIO_WritePin(GPIOB, GPIO_PIN_15, GPIO_PIN_RESET);
-  }
-  if (IR_FR > 2100)
-  {
-    HAL_GPIO_WritePin(GPIOB, GPIO_PIN_14, GPIO_PIN_SET);
-  }
-  else
-  {
-    HAL_GPIO_WritePin(GPIOB, GPIO_PIN_14, GPIO_PIN_RESET);
-  }
-  //printf("IR_FL: %d, IR_FR: %d\n\r", IR_FL, IR_FR);
-}
-
-uint32_t IR_BL = 0;
-uint32_t IR_BR = 0;
-uint16_t dma_b[2];
-
-void read_IR_outer_value(void){
-  HAL_ADC_Start_DMA(&hadc2, (uint32_t*)dma_b, 2);
-
-  IR_BL = dma_b[0];
-  IR_BR = dma_b[1];
-  if (IR_BL > 2100)
-  {
-    HAL_GPIO_WritePin(GPIOC, GPIO_PIN_7, GPIO_PIN_SET);
-  }
-  else
-  {
-    HAL_GPIO_WritePin(GPIOC, GPIO_PIN_7, GPIO_PIN_RESET);
-  }
-  if (IR_BR > 2100)
-  {
-    HAL_GPIO_WritePin(GPIOB, GPIO_PIN_13, GPIO_PIN_SET);
-  }
-  else
-  {
-    HAL_GPIO_WritePin(GPIOB, GPIO_PIN_13, GPIO_PIN_RESET);
-  }
-  //printf("IR_BL: %d, IR_BR: %d\n\r", IR_BL, IR_BR);
-}
-
 extern bool flag_offset;
 int cnt = 0;
 int cnt1kHz = 0;
@@ -131,6 +74,8 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
   {
     if (htim == &htim1)
     {
+      ReadFrontIRSensor(&ir_sensor);
+      ReadBackIRSensor(&ir_sensor);
       cnt = (cnt + 1) % 16;
       if (cnt == 0)
       {
@@ -142,8 +87,8 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
           cnt100Hz = (cnt100Hz + 1) % 100;
           // GetEncoderL(&encoder_LR);
           // GetEncoderR(&encoder_LR);
-          AngleControl(&gyro_z);
-          AngularVelocityControl(&gyro_z);
+          // AngleControl(&gyro_z);
+          // AngularVelocityControl(&gyro_z);
         }
         if (cnt100Hz == 0)
         {
@@ -156,6 +101,7 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
         {
           // printf("%f \r\n", gyro_z.yaw);
           // printf("%d, %d \r\n", encoder_LR.countL, encoder_LR.countR);
+          // printf("%d, %d \r\n", ir_sensor.ir_fl, ir_sensor.ir_fr);
         }
       }
     }
@@ -235,6 +181,9 @@ int main(void)
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
+
+    __HAL_TIM_SET_COMPARE(&htim10, TIM_CHANNEL_1, 20);
+    __HAL_TIM_SET_COMPARE(&htim11, TIM_CHANNEL_1, 20);
 
     //DC Motor Debug
     // __HAL_TIM_SET_COMPARE(&htim5, TIM_CHANNEL_1, 200);

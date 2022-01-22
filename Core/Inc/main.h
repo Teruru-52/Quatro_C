@@ -35,6 +35,7 @@ extern "C" {
 #include "gyro.h"
 #include "encoder.h"
 #include "control.h"
+#include "ir_sensor.h"
 /* USER CODE END Includes */
 
 /* Exported types ------------------------------------------------------------*/
