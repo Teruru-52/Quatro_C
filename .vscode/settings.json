@@ -7,6 +7,8 @@
         "spi.h": "c",
         "control.h": "c",
         "gyro.h": "c",
-        "tim.h": "c"
+        "tim.h": "c",
+        "stdint.h": "c",
+        "usart.h": "c"
     }
 }

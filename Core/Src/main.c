@@ -65,25 +65,25 @@ void SystemClock_Config(void);
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
 extern bool flag_offset;
-int cnt = 0;
+int cnt16kHz = 0;
 int cnt1kHz = 0;
 int cnt100Hz = 0;
 void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 {
   if (flag_offset == true)
   {
-    if (htim == &htim1)
+    if (htim == &htim1) //タイマー割込み16kHz
     {
       ReadFrontIRSensor(&ir_sensor);
       ReadBackIRSensor(&ir_sensor);
-      cnt = (cnt + 1) % 16;
-      if (cnt == 0)
+      cnt16kHz = (cnt16kHz + 1) % 16;
+      if (cnt16kHz == 0) //タイマー割込み1kHz
       {
         // angle_control(theta);
         GetGyroZ(&gyro_z);
         GetYaw(&gyro_z);
         cnt1kHz = (cnt1kHz + 1) % 1000;
-        if (cnt1kHz % 10 == 0){
+        if (cnt1kHz % 10 == 0){ //タイマー割込み100Hz
           cnt100Hz = (cnt100Hz + 1) % 100;
           // GetEncoderL(&encoder_LR);
           // GetEncoderR(&encoder_LR);
@@ -158,12 +158,8 @@ int main(void)
   HAL_TIM_PWM_Start(&htim2, TIM_CHANNEL_1);
   HAL_TIM_Encoder_Start(&htim3, TIM_CHANNEL_ALL);
   HAL_TIM_Encoder_Start(&htim4, TIM_CHANNEL_ALL);
-  // int16_t countL_int = 0;
-  // int32_t countL_int = 0;
-  // float theta = 0;
   GyroInit(); //who_am_i
   GyroOffsetCalc();
-  //int16_t countR_int = 0;
   HAL_TIM_PWM_Start(&htim5, TIM_CHANNEL_1);
   HAL_TIM_PWM_Start(&htim5, TIM_CHANNEL_2);
   HAL_TIM_PWM_Start(&htim5, TIM_CHANNEL_3);
@@ -185,28 +181,11 @@ int main(void)
     __HAL_TIM_SET_COMPARE(&htim10, TIM_CHANNEL_1, 20);
     __HAL_TIM_SET_COMPARE(&htim11, TIM_CHANNEL_1, 20);
 
-    //DC Motor Debug
-    // __HAL_TIM_SET_COMPARE(&htim5, TIM_CHANNEL_1, 200);
-    // __HAL_TIM_SET_COMPARE(&htim5, TIM_CHANNEL_3, 200);
-
-    //Encoder Debug
-    /*countL_int = read_encoderL_value();
-    printf("Encoder_L: %d\n\r", countL_int);
-    HAL_Delay(100);*/
-
     // MPU-6500 Debug
     // GetGyroZ(&gyro_z);
     // GetYaw(&gyro_z);
     // printf("%f\r\n", gyro_z.gz);
     // HAL_Delay(50);
-
-    // if (theta > 90)
-    // {
-    //   __HAL_TIM_SET_COMPARE(&htim5, TIM_CHANNEL_1, 0);
-    //   __HAL_TIM_SET_COMPARE(&htim5, TIM_CHANNEL_3, 0);
-    //   HAL_Delay(2000);
-    //   theta = 0;
-    // }
   }
   /* USER CODE END 3 */
 }

@@ -1,6 +1,7 @@
 #ifndef _GYRO_H_
 #define _GYRO_H_
-#include "main.h"
+#include <stdint.h>
+// #include "main.h" // これを記述するとエラー
 
 #define ADDRESS           0x68
 #define WHO_AM_I          0x75
@@ -30,7 +31,7 @@ void GyroOffsetCalc();
 void GetGyroZ(Gyro_Typedef *gyro);
 void GetYaw(Gyro_Typedef *gyro);
 
-void AngleControl(Gyro_Typedef *gyro);
-void AngularVelocityControl(Gyro_Typedef *gyro);
+// void AngleControl(Gyro_Typedef *gyro);
+// void AngularVelocityControl(Gyro_Typedef *gyro);
 
 #endif // _GYRO_H_

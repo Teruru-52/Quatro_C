@@ -1,6 +1,7 @@
 #ifndef _CONTROL_H_
 #define _CONTROL_H_
 #include "main.h"
+// #include "gyro.h"
 
 #define YAW_PID_KP  20
 #define YAW_PID_KI  0
@@ -12,12 +13,12 @@
 
 #define YAW_REF 0
 
-// typedef struct
-// {
-//     float ts;
-// } Control_Typedef;
+typedef struct
+{
+    float ts;
+} Control_Typedef;
 
-// void AngleControl(Gyro_Typedef *gyro);
-// void AngularVelocityControl(Gyro_Typedef *gyro);
+void AngleControl(Gyro_Typedef *gyro);
+void AngularVelocityControl(Gyro_Typedef *gyro);
 
 #endif // _CONTROL_H_
