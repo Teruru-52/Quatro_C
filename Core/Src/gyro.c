@@ -1,10 +1,9 @@
 #include "gyro.h"
+#include "spi.h"
 #include "stm32f4xx_hal.h"
 #include <string.h>
 #include <stdio.h>
 #include <stdint.h>
-
-extern SPI_HandleTypeDef hspi1;
 
 static float gyro_offset;
 float yaw = 0;
