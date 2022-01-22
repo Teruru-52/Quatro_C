@@ -31,6 +31,7 @@
 #include <string.h>
 #include <stdio.h>
 #include <stdint.h>
+#include <stdbool.h>
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -162,34 +163,37 @@ void angle_control(float yaw){
   pre_error = error;
 }
 
-// float theta = 0;
-// int cnt = 0;
-// int cnt1kHz = 0;
-// void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
-// {
-//   if (htim == &htim1)
-//   {
-//     cnt = (cnt + 1) % 16;
-//     if (cnt == 0)
-//     {
-//       // theta += (mpu6500_read_gyro_z() - gyro_z_offset_data) * 0.001;
-//       // angle_control(theta);
-//       cnt1kHz = (cnt1kHz + 1) % 1000;
-//       if (cnt1kHz == 0){
-//         GetGyroZ(&gyro_z);
-//         GetYaw(&gyro_z);
-//       //   HAL_GPIO_WritePin(GPIOC, GPIO_PIN_8, GPIO_PIN_SET);
-//       }
-//       // else
-//       //   HAL_GPIO_WritePin(GPIOC, GPIO_PIN_8, GPIO_PIN_RESET);
+extern bool flag_offset;
+int cnt = 0;
+int cnt1kHz = 0;
+void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
+{
+  if (flag_offset == true)
+  {
+    if (htim == &htim1)
+    {
+      cnt = (cnt + 1) % 16;
+      if (cnt == 0)
+      {
+        // angle_control(theta);
+        GetGyroZ(&gyro_z);
+        GetYaw(&gyro_z);
+        cnt1kHz = (cnt1kHz + 1) % 1000;
+        if (cnt1kHz == 0)
+        {
+          HAL_GPIO_WritePin(GPIOC, GPIO_PIN_8, GPIO_PIN_SET);
+        }
+        else
+          HAL_GPIO_WritePin(GPIOC, GPIO_PIN_8, GPIO_PIN_RESET);
 
-//       if (cnt1kHz % 200 == 0)
-//       {
-//         printf("%f \r\n", &gyro_z.yaw);
-//       }
-//     }
-//   }
-// }
+        if (cnt1kHz % 200 == 0)
+        {
+          printf("%f \r\n", gyro_z.yaw);
+        }
+      }
+    }
+  }
+}
 /* USER CODE END 0 */
 
 /**
@@ -265,11 +269,6 @@ int main(void)
 
     /* USER CODE BEGIN 3 */
 
-    GetGyroZ(&gyro_z);
-    GetYaw(&gyro_z);
-    printf("%f\r\n", gyro_z.gz);
-    HAL_Delay(50);
-
     //DC Motor Debug
     // __HAL_TIM_SET_COMPARE(&htim5, TIM_CHANNEL_1, 200);
     // __HAL_TIM_SET_COMPARE(&htim5, TIM_CHANNEL_3, 200);
@@ -280,9 +279,9 @@ int main(void)
     HAL_Delay(100);*/
 
     // MPU-6500 Debug
-    // printf("%f \r\n", mpu6500_read_gyro_z() - gyro_z_offset_data);
-    // theta += (mpu6500_read_gyro_z() - gyro_z_offset_data) * 0.05;
-    // printf("%f \r\n", theta);
+    // GetGyroZ(&gyro_z);
+    // GetYaw(&gyro_z);
+    // printf("%f\r\n", gyro_z.gz);
     // HAL_Delay(50);
 
     // if (theta > 90)

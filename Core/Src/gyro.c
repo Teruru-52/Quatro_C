@@ -5,9 +5,11 @@
 #include <string.h>
 #include <stdio.h>
 #include <stdint.h>
+#include <stdbool.h>
 
 static float gyro_offset;
-float yaw = 0;
+static float yaw = 0;
+bool flag_offset = false;
 
 uint8_t read_byte(uint8_t reg)
 {
@@ -83,6 +85,7 @@ void GyroOffsetCalc()
     HAL_Delay(50);
     __HAL_TIM_SET_COMPARE(&htim2, TIM_CHANNEL_1, 0);
 
+    flag_offset = true;
 }
 
 void GetGyroZ(Gyro_Typedef *gyro)
@@ -99,7 +102,7 @@ void GetGyroZ(Gyro_Typedef *gyro)
 }
 
 void GetYaw(Gyro_Typedef *gyro){
-    yaw += gyro->gz * 0.05;
+    yaw += gyro->gz * 0.001;
 
     gyro->yaw = yaw;
 }
