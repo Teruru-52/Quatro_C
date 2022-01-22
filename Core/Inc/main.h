@@ -34,6 +34,7 @@ extern "C" {
 /* USER CODE BEGIN Includes */
 #include "gyro.h"
 #include "encoder.h"
+#include "control.h"
 /* USER CODE END Includes */
 
 /* Exported types ------------------------------------------------------------*/

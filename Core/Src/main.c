@@ -121,32 +121,6 @@ void read_IR_outer_value(void){
   //printf("IR_BL: %d, IR_BR: %d\n\r", IR_BL, IR_BR);
 }
 
-float yaw_ref = 0.0;
-float pre_error = 0.0;
-float sum_error = 0.0;
-float kp_angle = 20.0;
-float ki_angle = 0.0;
-float kd_angle = 0.0;
-
-void angle_control(float yaw){
-  float error = yaw_ref - yaw;
-  sum_error += error;
-  int u = kp_angle*error + ki_angle*sum_error*0.001 + kd_angle*(pre_error - error)*1000.0;
-  if(u > 0){
-    __HAL_TIM_SET_COMPARE(&htim5, TIM_CHANNEL_1, 150+u);
-    __HAL_TIM_SET_COMPARE(&htim5, TIM_CHANNEL_2, 0);
-    __HAL_TIM_SET_COMPARE(&htim5, TIM_CHANNEL_3, 150+u);
-    __HAL_TIM_SET_COMPARE(&htim5, TIM_CHANNEL_4, 0);
-  }
-  else{
-    __HAL_TIM_SET_COMPARE(&htim5, TIM_CHANNEL_1, 0);
-    __HAL_TIM_SET_COMPARE(&htim5, TIM_CHANNEL_2, -u+150);
-    __HAL_TIM_SET_COMPARE(&htim5, TIM_CHANNEL_3, 0);
-    __HAL_TIM_SET_COMPARE(&htim5, TIM_CHANNEL_4, -u+150);
-  }
-  pre_error = error;
-}
-
 extern bool flag_offset;
 int cnt = 0;
 int cnt1kHz = 0;
@@ -166,8 +140,10 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
         cnt1kHz = (cnt1kHz + 1) % 1000;
         if (cnt1kHz % 10 == 0){
           cnt100Hz = (cnt100Hz + 1) % 100;
-          GetEncoderL(&encoder_LR);
-          GetEncoderR(&encoder_LR);
+          // GetEncoderL(&encoder_LR);
+          // GetEncoderR(&encoder_LR);
+          AngleControl(&gyro_z);
+          AngularVelocityControl(&gyro_z);
         }
         if (cnt100Hz == 0)
         {
@@ -179,7 +155,7 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
         if (cnt1kHz % 200 == 0)
         {
           // printf("%f \r\n", gyro_z.yaw);
-          printf("%d, %d \r\n", encoder_LR.countL, encoder_LR.countR);
+          // printf("%d, %d \r\n", encoder_LR.countL, encoder_LR.countR);
         }
       }
     }
