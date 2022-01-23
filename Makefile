@@ -56,7 +56,6 @@ Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_adc.c \
 Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_adc_ex.c \
 Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_ll_adc.c \
 Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_uart.c \
-Core/Src/gyro.c \
 Core/Src/syscalls.c \
 Core/Src/gpio.c \
 Core/Src/adc.c \
@@ -64,10 +63,10 @@ Core/Src/dma.c \
 Core/Src/spi.c \
 Core/Src/tim.c \
 Core/Src/usart.c \
-Core/Src/encoder.c \
 Core/Src/control.c \
-Core/Src/ir_sensor.c \
-Core/Src/iir_filter.c
+Core/Src/encoder.c \
+Core/Src/gyro.c \
+Core/Src/ir_sensor.c
 
 # ASM sources
 ASM_SOURCES =  \
