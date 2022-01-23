@@ -20,7 +20,7 @@
 
 typedef struct
 {
-    float gz, yaw;
+  float offset, gz, yaw;
 } Gyro_Typedef;
 
 typedef struct

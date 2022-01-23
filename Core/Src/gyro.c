@@ -1,6 +1,5 @@
 #include "gyro.h"
 
-static float gyro_offset;
 static float yaw = 0;
 bool flag_offset = false;
 
@@ -78,10 +77,21 @@ void GyroOffsetCalc()
         gz_raw = (int16_t)(((uint16_t)read_byte(GYRO_ZOUT_H) << 8) | (uint16_t)read_byte(GYRO_ZOUT_L));
         // printf("%d\r\n", gz_raw);
         gz = (float)(gz_raw / 16.4); // dps to deg/sec
-        sum += gz;
+
+        float filtered_gyro_z = gyro_fil_coeff.b0 * gz + gyro_fil_coeff.b1 * gyro_x_pre[0] + gyro_fil_coeff.b2 * gyro_x_pre[1] + gyro_fil_coeff.a1 * gyro_y_pre[0] + gyro_fil_coeff.a2 * gyro_y_pre[1];
+
+        // Shift IIR filter state
+        for (int j = 1; j > 0; j--)
+        {
+            gyro_x_pre[j] = gyro_x_pre[j - 1];
+            gyro_y_pre[j] = gyro_y_pre[j - 1];
+        }
+        gyro_x_pre[0] = gz;
+        gyro_y_pre[0] = filtered_gyro_z;
+        sum += filtered_gyro_z;
         HAL_Delay(1);
     }
-    gyro_offset = sum / 1000.0;
+    gyro->offset = sum / 1000.0;
     // printf("%f\r\n", gyro_offset);
 
     // Speaker
@@ -116,7 +126,7 @@ void GetGyroData(Gyro_Typedef *gyro)
     gyro_x_pre[0] = gz;
     gyro_y_pre[0] = filtered_gyro_z;
 
-    gyro->gz = filtered_gyro_z - gyro_offset;
+    gyro->gz = filtered_gyro_z - gyro->offset;
     yaw += gyro->gz * 0.001;
     gyro->yaw = yaw;
 }
