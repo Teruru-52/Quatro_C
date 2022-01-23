@@ -1,11 +1,10 @@
 #include "ir_sensor.h"
-
 uint16_t dma_f[2];
 uint16_t dma_b[2];
 
 void IRPwmStart(){
-  __HAL_TIM_SET_COMPARE(&htim10, TIM_CHANNEL_1, 2);
-  __HAL_TIM_SET_COMPARE(&htim11, TIM_CHANNEL_1, 2);
+  __HAL_TIM_SET_COMPARE(&htim10, TIM_CHANNEL_1, 20);
+  __HAL_TIM_SET_COMPARE(&htim11, TIM_CHANNEL_1, 20);
 }
 
 void ReadFrontIRSensor(IR_SENSOR_Typedef *sensor){

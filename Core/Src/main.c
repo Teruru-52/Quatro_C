@@ -19,12 +19,7 @@
 /* USER CODE END Header */
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
-#include "adc.h"
-#include "dma.h"
-#include "spi.h"
-#include "tim.h"
-#include "usart.h"
-#include "gpio.h"
+#include "my_header.h"
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
@@ -97,7 +92,7 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 
         if (cnt1kHz % 200 == 0)
         {
-          // printf("%f \r\n", gyro_z.yaw);
+          printf("%f \r\n", gyro_z.yaw);
           // printf("%d, %d \r\n", encoder_LR.countL, encoder_LR.countR);
           // printf("%d, %d \r\n", ir_sensor.ir_fl, ir_sensor.ir_fr);
           // printf("%d \r\n", pid_control.input);
