@@ -66,7 +66,7 @@ void GyroInit()
     // printf("0x%x\r\n", read_byte(0x1B));
 }
 
-void GyroOffsetCalc()
+void GyroOffsetCalc(Gyro_Typedef *gyro)
 {
     int16_t gz_raw;
     float gz;
