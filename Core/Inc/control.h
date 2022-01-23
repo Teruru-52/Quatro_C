@@ -3,15 +3,15 @@
 #include "main.h"
 #include "gyro.h"
 
-#define YAW_PID_KP  20
+#define YAW_PID_KP  10
 #define YAW_PID_KI  0
 #define YAW_PID_KD  0
 
-#define GYRO_PID_KP  20
+#define GYRO_PID_KP  1
 #define GYRO_PID_KI  0
 #define GYRO_PID_KD  0
 
-#define PID_SAMPLING_TIME   0.001f
+#define PID_SAMPLING_TIME   0.01f
 #define D_FILTER_COFF       0.025f
 
 struct Gyro_Typedef;

@@ -76,8 +76,7 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
         cnt1kHz = (cnt1kHz + 1) % 1000;
         if (cnt1kHz % 10 == 0){ //割込み100Hz
           cnt100Hz = (cnt100Hz + 1) % 100;
-          // GetEncoderL(&encoder_LR);
-          // GetEncoderR(&encoder_LR);
+          // GetEncoderData(&encoder_LR);
           // AngleControl(&gyro_z, &pid_control);
           // AngularVelocityControl(&gyro_z, &pid_control);
         }
@@ -90,7 +89,7 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 
         if (cnt1kHz % 200 == 0)
         {
-          // printf("%f \r\n", gyro_z.yaw);
+          printf("%f \r\n", gyro_z.yaw);
           // printf("%d, %d \r\n", encoder_LR.countL, encoder_LR.countR);
           // printf("%d, %d \r\n", ir_sensor.ir_fl, ir_sensor.ir_fr);
         }
@@ -151,6 +150,7 @@ int main(void)
   HAL_TIM_Encoder_Start(&htim4, TIM_CHANNEL_ALL);
   GyroInit(); //who_am_i
   IIRInit();
+  PIDControlInit(&pid_control);
   GyroOffsetCalc(&gyro_z);
   HAL_TIM_PWM_Start(&htim5, TIM_CHANNEL_1);
   HAL_TIM_PWM_Start(&htim5, TIM_CHANNEL_2);
