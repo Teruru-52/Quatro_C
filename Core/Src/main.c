@@ -30,6 +30,7 @@
 Gyro_Typedef gyro_z;
 Encoder_Typedef encoder_LR;
 IR_SENSOR_Typedef ir_sensor;
+Control_Typedef pid_control;
 /* USER CODE END PTD */
 
 /* Private define ------------------------------------------------------------*/
@@ -77,8 +78,8 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
           cnt100Hz = (cnt100Hz + 1) % 100;
           // GetEncoderL(&encoder_LR);
           // GetEncoderR(&encoder_LR);
-          // AngleControl(&gyro_z);
-          // AngularVelocityControl(&gyro_z);
+          // AngleControl(&gyro_z, &pid_control);
+          // AngularVelocityControl(&gyro_z, &pid_control);
         }
         if (cnt100Hz == 0)
         {
