@@ -2,32 +2,29 @@
 #include "tim.h"
 #include <stdint.h>
 
-void GetEncoderL(Encoder_Typedef *encoder)
+void GetEncoderData(Encoder_Typedef *encoder)
 {
-  int16_t count = 0;
-  uint16_t enc_buff = TIM3->CNT;
-  // int16_t enc_buff = (int16_t)TIM3->CNT;
+  int16_t countl = 0;
+  int16_t countr = 0;
+  uint16_t enc_buff_l = TIM3->CNT;
+  uint16_t enc_buff_r = TIM4->CNT;
+  // int16_t enc_buff_l = (int16_t)TIM3->CNT;
+  // int16_t enc_buff_r = (int16_t)TIM4->CNT;
   TIM3->CNT = 0;
-  if( enc_buff > 32767 ){
-    count = (int16_t)enc_buff*-1;
-  } else {
-    count = (int16_t)enc_buff;
-  }
-
-  encoder->countL = count;
-}
-
-void GetEncoderR(Encoder_Typedef *encoder)
-{
-  int16_t count = 0;
-  uint16_t enc_buff = TIM4->CNT;
-  // int16_t enc_buff = (int16_t)TIM4->CNT;
   TIM4->CNT = 0;
-  if( enc_buff > 32767 ){
-    count = (int16_t)enc_buff*-1;
+
+  if( enc_buff_l > 32767 ){
+    countl = (int16_t)enc_buff_l*-1;
   } else {
-    count = (int16_t)enc_buff;
+    countl = (int16_t)enc_buff_l;
   }
 
-  encoder->countR = count;
+  if( enc_buff_r > 32767 ){
+    countr = (int16_t)enc_buff_r*-1;
+  } else {
+    countr = (int16_t)enc_buff_r;
+  }
+
+  encoder->countL = countl;
+  encoder->countR = countr;
 }

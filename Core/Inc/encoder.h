@@ -6,7 +6,6 @@ typedef struct{
     int16_t countL, countR;
 }Encoder_Typedef;
 
-void GetEncoderL(Encoder_Typedef *encoder);
-void GetEncoderR(Encoder_Typedef *encoder);
+void GetEncoderData(Encoder_Typedef *encoder);
 
 #endif // _ENCODER_H_

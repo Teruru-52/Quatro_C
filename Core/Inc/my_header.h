@@ -5,5 +5,6 @@
 #include "gyro.h"
 #include "encoder.h"
 #include "ir_sensor.h"
+#include "fan_motor.h"
 
 #endif

@@ -1,10 +1,25 @@
 #include "gyro.h"
 
-static float gyro_offset;
 static float yaw = 0;
 bool flag_offset = false;
 
 static float gyro_y_pre[4], gyro_x_pre[4];
+
+//IIR filter
+//7hz, 800hz
+//IIR_Coeff gyro_fil_coeff = {1.922286512869545,  -0.92519529534950118, 0.00072719561998898304, 0.0014543912399779661, 0.00072719561998898304};
+
+//15hz, 800hz
+//IIR_Coeff gyro_fil_coeff = {1.8337326589246479,  -0.84653197479202391, 0.003199828966843966, 0.0063996579336879321, 0.003199828966843966};
+
+//30hz, 800hz
+//IIR_Coeff gyro_fil_coeff = {1.66920314293119312,  -0.71663387350415764, 0.011857682643241156, 0.023715365286482312, 0.011857682643241156};
+
+//60hz, 800hz
+//IIR_Coeff gyro_fil_coeff = {1.3489677452527946 ,  -0.51398189421967566, 0.041253537241720303, 0.082507074483440607, 0.041253537241720303};
+
+//100hz, 800hz
+static IIR_Coeff gyro_fil_coeff = {0.94280904158206336,  -0.33333333333333343, 0.09763107293781749 , 0.19526214587563498 , 0.09763107293781749};
 
 uint8_t read_byte(uint8_t reg)
 {
@@ -53,7 +68,7 @@ void GyroInit()
     // error check
     if (who_am_i != 0x70)
     {
-        printf("gyro_error");
+        printf("gyro_error \r\n");
     }
     HAL_Delay(50);
     write_byte(PWR_MGMT_1, 0x80); // 3. set pwr_might (20MHz)
@@ -67,8 +82,10 @@ void GyroInit()
     // printf("0x%x\r\n", read_byte(0x1B));
 }
 
-void GyroOffsetCalc()
+void GyroOffsetCalc(Gyro_Typedef *gyro)
 {
+    HAL_GPIO_WritePin(GPIOC, GPIO_PIN_9, GPIO_PIN_SET);
+
     int16_t gz_raw;
     float gz;
     float sum = 0;
@@ -78,10 +95,22 @@ void GyroOffsetCalc()
         gz_raw = (int16_t)(((uint16_t)read_byte(GYRO_ZOUT_H) << 8) | (uint16_t)read_byte(GYRO_ZOUT_L));
         // printf("%d\r\n", gz_raw);
         gz = (float)(gz_raw / 16.4); // dps to deg/sec
-        sum += gz;
+
+        float filtered_gyro_z = gyro_fil_coeff.b0 * gz + gyro_fil_coeff.b1 * gyro_x_pre[0] + gyro_fil_coeff.b2 * gyro_x_pre[1] + gyro_fil_coeff.a1 * gyro_y_pre[0] + gyro_fil_coeff.a2 * gyro_y_pre[1];
+
+        // Shift IIR filter state
+        for (int j = 1; j > 0; j--)
+        {
+            gyro_x_pre[j] = gyro_x_pre[j - 1];
+            gyro_y_pre[j] = gyro_y_pre[j - 1];
+        }
+        gyro_x_pre[0] = gz;
+        gyro_y_pre[0] = filtered_gyro_z;
+        sum += filtered_gyro_z; //filter
+        // sum += gz; //nonfilter
         HAL_Delay(1);
     }
-    gyro_offset = sum / 1000.0;
+    gyro->offset = sum / 1000.0;
     // printf("%f\r\n", gyro_offset);
 
     // Speaker
@@ -89,10 +118,14 @@ void GyroOffsetCalc()
     HAL_Delay(50);
     __HAL_TIM_SET_COMPARE(&htim2, TIM_CHANNEL_1, 0);
 
+    HAL_GPIO_WritePin(GPIOC, GPIO_PIN_9, GPIO_PIN_RESET);
+
+    IIRInit();
+
     flag_offset = true;
 }
 
-void GetGyroZ(Gyro_Typedef *gyro)
+void GetGyroData(Gyro_Typedef *gyro)
 {
     int16_t gz_raw;
     float gz;
@@ -114,11 +147,8 @@ void GetGyroZ(Gyro_Typedef *gyro)
     gyro_x_pre[0] = gz;
     gyro_y_pre[0] = filtered_gyro_z;
 
-    gyro->gz = filtered_gyro_z - gyro_offset;
-}
-
-void GetYaw(Gyro_Typedef *gyro){
+    gyro->gz = filtered_gyro_z - gyro->offset; //filter
+    // gyro->gz = gz - gyro->offset;  // nonfilter
     yaw += gyro->gz * 0.001;
-
     gyro->yaw = yaw;
 }
