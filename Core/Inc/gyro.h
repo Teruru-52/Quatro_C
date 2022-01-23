@@ -50,7 +50,6 @@ void write_byte(uint8_t reg, uint8_t data);
 void IIRInit();
 void GyroInit();
 void GyroOffsetCalc();
-void GetGyroZ(Gyro_Typedef *gyro);
-void GetYaw(Gyro_Typedef *gyro);
+void GetGyroData(Gyro_Typedef *gyro);
 
 #endif // _GYRO_H_

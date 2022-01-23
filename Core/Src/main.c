@@ -71,8 +71,7 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
       if (cnt16kHz == 0) //割込み1kHz
       {
         // angle_control(theta);
-        GetGyroZ(&gyro_z);
-        GetYaw(&gyro_z);
+        GetGyroData(&gyro_z);
         cnt1kHz = (cnt1kHz + 1) % 1000;
         if (cnt1kHz % 10 == 0){ //割込み100Hz
           cnt100Hz = (cnt100Hz + 1) % 100;
@@ -152,7 +151,6 @@ int main(void)
   GyroInit(); //who_am_i
   IIRInit();
   GyroOffsetCalc();
-  IIRInit();
   HAL_TIM_PWM_Start(&htim5, TIM_CHANNEL_1);
   HAL_TIM_PWM_Start(&htim5, TIM_CHANNEL_2);
   HAL_TIM_PWM_Start(&htim5, TIM_CHANNEL_3);

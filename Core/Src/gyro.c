@@ -89,10 +89,12 @@ void GyroOffsetCalc()
     HAL_Delay(50);
     __HAL_TIM_SET_COMPARE(&htim2, TIM_CHANNEL_1, 0);
 
+    IIRInit();
+
     flag_offset = true;
 }
 
-void GetGyroZ(Gyro_Typedef *gyro)
+void GetGyroData(Gyro_Typedef *gyro)
 {
     int16_t gz_raw;
     float gz;
@@ -115,10 +117,6 @@ void GetGyroZ(Gyro_Typedef *gyro)
     gyro_y_pre[0] = filtered_gyro_z;
 
     gyro->gz = filtered_gyro_z - gyro_offset;
-}
-
-void GetYaw(Gyro_Typedef *gyro){
     yaw += gyro->gz * 0.001;
-
     gyro->yaw = yaw;
 }
