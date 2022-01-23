@@ -5,6 +5,22 @@ bool flag_offset = false;
 
 static float gyro_y_pre[4], gyro_x_pre[4];
 
+//IIR filter
+//7hz, 800hz
+//IIR_Coeff gyro_fil_coeff = {1.922286512869545,  -0.92519529534950118, 0.00072719561998898304, 0.0014543912399779661, 0.00072719561998898304};
+
+//15hz, 800hz
+//IIR_Coeff gyro_fil_coeff = {1.8337326589246479,  -0.84653197479202391, 0.003199828966843966, 0.0063996579336879321, 0.003199828966843966};
+
+//30hz, 800hz
+//IIR_Coeff gyro_fil_coeff = {1.66920314293119312,  -0.71663387350415764, 0.011857682643241156, 0.023715365286482312, 0.011857682643241156};
+
+//60hz, 800hz
+//IIR_Coeff gyro_fil_coeff = {1.3489677452527946 ,  -0.51398189421967566, 0.041253537241720303, 0.082507074483440607, 0.041253537241720303};
+
+//100hz, 800hz
+static IIR_Coeff gyro_fil_coeff = {0.94280904158206336,  -0.33333333333333343, 0.09763107293781749 , 0.19526214587563498 , 0.09763107293781749};
+
 uint8_t read_byte(uint8_t reg)
 {
   uint8_t rx_data[2];
@@ -52,7 +68,7 @@ void GyroInit()
     // error check
     if (who_am_i != 0x70)
     {
-        printf("gyro_error");
+        printf("gyro_error \r\n");
     }
     HAL_Delay(50);
     write_byte(PWR_MGMT_1, 0x80); // 3. set pwr_might (20MHz)
@@ -68,6 +84,8 @@ void GyroInit()
 
 void GyroOffsetCalc(Gyro_Typedef *gyro)
 {
+    HAL_GPIO_WritePin(GPIOC, GPIO_PIN_9, GPIO_PIN_SET);
+
     int16_t gz_raw;
     float gz;
     float sum = 0;
@@ -99,6 +117,8 @@ void GyroOffsetCalc(Gyro_Typedef *gyro)
     __HAL_TIM_SET_COMPARE(&htim2, TIM_CHANNEL_1, 10);
     HAL_Delay(50);
     __HAL_TIM_SET_COMPARE(&htim2, TIM_CHANNEL_1, 0);
+
+    HAL_GPIO_WritePin(GPIOC, GPIO_PIN_9, GPIO_PIN_RESET);
 
     IIRInit();
 

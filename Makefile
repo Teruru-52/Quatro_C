@@ -66,7 +66,8 @@ Core/Src/usart.c \
 Core/Src/control.c \
 Core/Src/encoder.c \
 Core/Src/gyro.c \
-Core/Src/ir_sensor.c
+Core/Src/ir_sensor.c \
+Core/Src/fan_motor.c
 
 # ASM sources
 ASM_SOURCES =  \
