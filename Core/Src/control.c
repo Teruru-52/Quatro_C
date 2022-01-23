@@ -32,7 +32,7 @@ void AngleControl(Gyro_Typedef *gyro, Control_Typedef *pid){
 void AngularVelocityControl(Gyro_Typedef *gyro, Control_Typedef *pid){
   float error2, deriv2;
   error2 = pid->ref2 - gyro->gz;
-  sum_error2 += error2;
+  sum_error2 += error2*pid->ts;
   deriv2 = (error2 - pre_error2)/pid->ts*D_FILTER_COFF;
   pid->input = pid->kp2*error2 + pid->ki2*sum_error2 + pid->kd2*deriv2;
   if(pid->input > 0){
