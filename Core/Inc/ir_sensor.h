@@ -1,7 +1,7 @@
 #ifndef _IR_SENSOR_H_
 #define _IR_SENSOR_H_
-#include "main.h"
 
+#include "main.h"
 typedef struct
 {
     uint32_t ir_fl, ir_fr, ir_bl, ir_br;
