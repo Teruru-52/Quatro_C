@@ -88,7 +88,8 @@ void GyroOffsetCalc(Gyro_Typedef *gyro)
         }
         gyro_x_pre[0] = gz;
         gyro_y_pre[0] = filtered_gyro_z;
-        sum += filtered_gyro_z;
+        sum += filtered_gyro_z; //filter
+        // sum += gz; //nonfilter
         HAL_Delay(1);
     }
     gyro->offset = sum / 1000.0;
@@ -126,7 +127,8 @@ void GetGyroData(Gyro_Typedef *gyro)
     gyro_x_pre[0] = gz;
     gyro_y_pre[0] = filtered_gyro_z;
 
-    gyro->gz = filtered_gyro_z - gyro->offset;
+    gyro->gz = filtered_gyro_z - gyro->offset; //filter
+    // gyro->gz = gz - gyro->offset;  // nonfilter
     yaw += gyro->gz * 0.001;
     gyro->yaw = yaw;
 }

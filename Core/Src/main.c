@@ -69,11 +69,14 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
       ReadFrontIRSensor(&ir_sensor);
       ReadBackIRSensor(&ir_sensor);
       cnt16kHz = (cnt16kHz + 1) % 16;
+
       if (cnt16kHz == 0) //割込み1kHz
       {
-        // angle_control(theta);
-        GetGyroData(&gyro_z);
+        // GetGyroData(&gyro_z);
+        // AngleControl(&gyro_z, &pid_control);
+        // AngularVelocityControl(&gyro_z, &pid_control);
         cnt1kHz = (cnt1kHz + 1) % 1000;
+
         if (cnt1kHz % 10 == 0){ //割込み100Hz
           cnt100Hz = (cnt100Hz + 1) % 100;
           // GetEncoderData(&encoder_LR);
@@ -92,6 +95,7 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
           printf("%f \r\n", gyro_z.yaw);
           // printf("%d, %d \r\n", encoder_LR.countL, encoder_LR.countR);
           // printf("%d, %d \r\n", ir_sensor.ir_fl, ir_sensor.ir_fr);
+          // printf("%d \r\n", pid_control.input);
         }
       }
     }
@@ -151,6 +155,7 @@ int main(void)
   GyroInit(); //who_am_i
   IIRInit();
   PIDControlInit(&pid_control);
+  IRPwmStart();
   GyroOffsetCalc(&gyro_z);
   HAL_TIM_PWM_Start(&htim5, TIM_CHANNEL_1);
   HAL_TIM_PWM_Start(&htim5, TIM_CHANNEL_2);
@@ -169,15 +174,6 @@ int main(void)
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
-
-    __HAL_TIM_SET_COMPARE(&htim10, TIM_CHANNEL_1, 20);
-    __HAL_TIM_SET_COMPARE(&htim11, TIM_CHANNEL_1, 20);
-
-    // MPU-6500 Debug
-    // GetGyroZ(&gyro_z);
-    // GetYaw(&gyro_z);
-    // printf("%f\r\n", gyro_z.gz);
-    // HAL_Delay(50);
   }
   /* USER CODE END 3 */
 }

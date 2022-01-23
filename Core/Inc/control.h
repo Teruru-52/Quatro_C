@@ -3,16 +3,18 @@
 #include "main.h"
 #include "gyro.h"
 
-#define YAW_PID_KP  10
+#define YAW_PID_KP  4
 #define YAW_PID_KI  0
 #define YAW_PID_KD  0
 
-#define GYRO_PID_KP  1
+#define GYRO_PID_KP  10
 #define GYRO_PID_KI  0
 #define GYRO_PID_KD  0
 
-#define PID_SAMPLING_TIME   0.01f
+#define PID_SAMPLING_TIME   0.001f
 #define D_FILTER_COFF       0.025f
+
+#define STANDARD_INPUT 0
 
 struct Gyro_Typedef;
 
@@ -21,7 +23,7 @@ typedef struct
     float ts; //sampling time
     float kp1, ki1, kd1, kp2, ki2, kd2;
     float ref, ref2;
-    float input;
+    int input;
 } Control_Typedef;
 
 void PIDControlInit(Control_Typedef *pid);

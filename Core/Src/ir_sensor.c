@@ -1,5 +1,11 @@
 #include "ir_sensor.h"
 uint16_t dma_f[2];
+uint16_t dma_b[2];
+
+void IRPwmStart(){
+  __HAL_TIM_SET_COMPARE(&htim10, TIM_CHANNEL_1, 20);
+  __HAL_TIM_SET_COMPARE(&htim11, TIM_CHANNEL_1, 20);
+}
 
 void ReadFrontIRSensor(IR_SENSOR_Typedef *sensor){
   HAL_ADC_Start_DMA(&hadc1, (uint32_t*)dma_f, 2);
@@ -23,8 +29,6 @@ void ReadFrontIRSensor(IR_SENSOR_Typedef *sensor){
     HAL_GPIO_WritePin(GPIOB, GPIO_PIN_14, GPIO_PIN_RESET);
   }
 }
-
-uint16_t dma_b[2];
 
 void ReadBackIRSensor(IR_SENSOR_Typedef *sensor){
   HAL_ADC_Start_DMA(&hadc2, (uint32_t*)dma_b, 2);

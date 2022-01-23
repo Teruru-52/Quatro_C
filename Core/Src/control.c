@@ -36,16 +36,16 @@ void AngularVelocityControl(Gyro_Typedef *gyro, Control_Typedef *pid){
   deriv2 = (error2 - pre_error2)/pid->ts*D_FILTER_COFF;
   pid->input = pid->kp2*error2 + pid->ki2*sum_error2 + pid->kd2*deriv2;
   if(pid->input > 0){
-    __HAL_TIM_SET_COMPARE(&htim5, TIM_CHANNEL_1, 150+pid->input);
+    __HAL_TIM_SET_COMPARE(&htim5, TIM_CHANNEL_1, STANDARD_INPUT+pid->input);
     __HAL_TIM_SET_COMPARE(&htim5, TIM_CHANNEL_2, 0);
-    __HAL_TIM_SET_COMPARE(&htim5, TIM_CHANNEL_3, 150+pid->input);
+    __HAL_TIM_SET_COMPARE(&htim5, TIM_CHANNEL_3, STANDARD_INPUT+pid->input);
     __HAL_TIM_SET_COMPARE(&htim5, TIM_CHANNEL_4, 0);
   }
   else{
     __HAL_TIM_SET_COMPARE(&htim5, TIM_CHANNEL_1, 0);
-    __HAL_TIM_SET_COMPARE(&htim5, TIM_CHANNEL_2, 150-pid->input);
+    __HAL_TIM_SET_COMPARE(&htim5, TIM_CHANNEL_2, STANDARD_INPUT-pid->input);
     __HAL_TIM_SET_COMPARE(&htim5, TIM_CHANNEL_3, 0);
-    __HAL_TIM_SET_COMPARE(&htim5, TIM_CHANNEL_4, 150-pid->input);
+    __HAL_TIM_SET_COMPARE(&htim5, TIM_CHANNEL_4, STANDARD_INPUT-pid->input);
   }
   pre_error2 = error2;
 }
