@@ -32,10 +32,18 @@ extern "C" {
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-#include "gyro.h"
-#include "encoder.h"
-#include "control.h"
-#include "ir_sensor.h"
+#include <stdio.h>
+#include <stdint.h>
+#include <stdbool.h>
+#include <string.h>
+
+#include "adc.h"
+#include "dma.h"
+#include "spi.h"
+#include "tim.h"
+#include "usart.h"
+#include "gpio.h"
+
 /* USER CODE END Includes */
 
 /* Exported types ------------------------------------------------------------*/

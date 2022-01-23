@@ -1,6 +1,4 @@
-#include "main.h"
-#include "adc.h"
-
+#include "ir_sensor.h"
 uint16_t dma_f[2];
 
 void ReadFrontIRSensor(IR_SENSOR_Typedef *sensor){

@@ -1,7 +1,7 @@
 #ifndef _CONTROL_H_
 #define _CONTROL_H_
 #include "main.h"
-// #include "gyro.h"
+#include "gyro.h"
 
 #define YAW_PID_KP  20
 #define YAW_PID_KI  0
@@ -13,6 +13,7 @@
 
 #define YAW_REF 0
 
+struct Gyro_Typedef;
 // typedef struct
 // {
 //     float pre_error, pre_error2;

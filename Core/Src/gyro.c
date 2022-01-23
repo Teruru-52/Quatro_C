@@ -1,9 +1,4 @@
-#include "main.h"
-#include "spi.h"
-#include "tim.h"
-#include <stdio.h>
-#include <stdint.h>
-#include <stdbool.h>
+#include "gyro.h"
 
 static float gyro_offset;
 static float yaw = 0;

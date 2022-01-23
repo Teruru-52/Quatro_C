@@ -1,7 +1,6 @@
 #ifndef _GYRO_H_
 #define _GYRO_H_
-#include <stdint.h>
-// #include "main.h" // これを記述するとエラー
+#include "main.h"
 
 #define ADDRESS           0x68
 #define WHO_AM_I          0x75
@@ -43,7 +42,7 @@ typedef struct
 //IIR_Coeff gyro_fil_coeff = {1.3489677452527946 ,  -0.51398189421967566, 0.041253537241720303, 0.082507074483440607, 0.041253537241720303};
 
 //100hz, 800hz
-IIR_Coeff gyro_fil_coeff = {0.94280904158206336,  -0.33333333333333343, 0.09763107293781749 , 0.19526214587563498 , 0.09763107293781749};
+static IIR_Coeff gyro_fil_coeff = {0.94280904158206336,  -0.33333333333333343, 0.09763107293781749 , 0.19526214587563498 , 0.09763107293781749};
 
 uint8_t read_byte(uint8_t reg);
 void write_byte(uint8_t reg, uint8_t data);

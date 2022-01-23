@@ -1,6 +1,4 @@
-#include "main.h"
-#include "tim.h"
-
+#include "control.h"
 static float pre_error = 0.0;
 static float sum_error = 0.0;
 static float angular_vel_ref;
