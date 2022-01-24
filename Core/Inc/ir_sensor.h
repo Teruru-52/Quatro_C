@@ -12,6 +12,11 @@ typedef struct
     float bat_vol;
 } Battery_Typedef;
 
+// typedef struct
+// {
+//     float w1, w2;
+// } FFT_Coeff;
+
 void IRPwmStart();
 void ReadFrontIRSensor(IR_SENSOR_Typedef *sensor, Battery_Typedef *battery);
 void ReadBackIRSensor(IR_SENSOR_Typedef *sensor);
