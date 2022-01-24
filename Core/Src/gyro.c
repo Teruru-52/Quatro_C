@@ -5,6 +5,8 @@ bool flag_offset = false;
 
 static float gyro_y_pre[4], gyro_x_pre[4];
 
+Battery_Typedef bat_voltage;
+
 //IIR filter
 //7hz, 800hz
 //IIR_Coeff gyro_fil_coeff = {1.922286512869545,  -0.92519529534950118, 0.00072719561998898304, 0.0014543912399779661, 0.00072719561998898304};
@@ -84,7 +86,7 @@ void GyroInit()
 
 void GyroOffsetCalc(Gyro_Typedef *gyro)
 {
-    HAL_GPIO_WritePin(GPIOC, GPIO_PIN_9, GPIO_PIN_SET);
+    BatteryCheckOn(&bat_voltage);
 
     int16_t gz_raw;
     float gz;
@@ -118,7 +120,7 @@ void GyroOffsetCalc(Gyro_Typedef *gyro)
     HAL_Delay(50);
     __HAL_TIM_SET_COMPARE(&htim2, TIM_CHANNEL_1, 0);
 
-    HAL_GPIO_WritePin(GPIOC, GPIO_PIN_9, GPIO_PIN_RESET);
+    BatteryCheckOff();
 
     IIRInit();
 
