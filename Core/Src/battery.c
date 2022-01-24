@@ -21,7 +21,7 @@ void BatteryCheckOn(Battery_Typedef *battery){
     }
     else if (battery->bat_vol > 4.0)
     {
-        HAL_GPIO_WritePin(GPIOB, GPIO_PIN_15, GPIO_PIN_SET);
+        HAL_GPIO_WritePin(GPIOC, GPIO_PIN_7, GPIO_PIN_SET);
     }
 }
 
