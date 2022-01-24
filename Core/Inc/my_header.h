@@ -7,5 +7,6 @@
 #include "ir_sensor.h"
 #include "fan_motor.h"
 #include "flash_memory.h"
+#include "battery.h"
 
 #endif

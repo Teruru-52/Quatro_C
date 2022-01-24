@@ -1,7 +1,7 @@
 #include "ir_sensor.h"
 
-uint16_t dma_f[3];
-uint16_t dma_b[2];
+static uint16_t dma_f[3];
+static uint16_t dma_b[2];
 
 // static uint32_t fl[32];
 // static uint32_t fr[32];

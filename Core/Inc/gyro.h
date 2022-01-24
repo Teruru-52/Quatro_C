@@ -1,6 +1,7 @@
 #ifndef _GYRO_H_
 #define _GYRO_H_
 #include "main.h"
+#include "battery.h"
 
 #define ADDRESS           0x68
 #define WHO_AM_I          0x75
@@ -17,6 +18,8 @@
 
 #define GYRO_ZOUT_H       0x47
 #define GYRO_ZOUT_L       0x48
+
+struct Battery_Typedef;
 
 typedef struct
 {

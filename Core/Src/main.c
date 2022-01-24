@@ -37,7 +37,7 @@ Gyro_Typedef gyro_z;
 Encoder_Typedef encoder_LR;
 IR_SENSOR_Typedef ir_sensor;
 Control_Typedef pid_control;
-Battery_Typedef bat_voltage;
+extern Battery_Typedef bat_voltage;
 /* USER CODE END PTD */
 
 /* Private define ------------------------------------------------------------*/
@@ -63,32 +63,32 @@ void SystemClock_Config(void);
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
+bool flag_mode = false;
 extern bool flag_offset;
 int cnt16kHz = 0;
 int cnt1kHz = 0;
 int cnt100Hz = 0;
 void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 {
-  if (flag_offset == true)
+  if (htim == &htim1) //割込み16kHz
   {
-    if (htim == &htim1) //割込み16kHz
+    ReadFrontIRSensor(&ir_sensor, &bat_voltage);
+    ReadBackIRSensor(&ir_sensor);
+    cnt16kHz = (cnt16kHz + 1) % 16;
+    if (flag_offset == true)
     {
-      ReadFrontIRSensor(&ir_sensor, &bat_voltage);
-      ReadBackIRSensor(&ir_sensor);
-      cnt16kHz = (cnt16kHz + 1) % 16;
-
       if (cnt16kHz == 0) //割込み1kHz
       {
         GetIRSensorData(&ir_sensor);
         GetGyroData(&gyro_z);
-        // AngleControl(&gyro_z, &pid_control);
-        // AngularVelocityControl(&gyro_z, &pid_control);
         cnt1kHz = (cnt1kHz + 1) % 1000;
 
         if (cnt1kHz % 10 == 0)
         { //割込み100Hz
           cnt100Hz = (cnt100Hz + 1) % 100;
-          // GetEncoderData(&encoder_LR);
+          // if(flag_mode == true){
+          //   GetEncoderData(&encoder_LR);
+          // }
           // AngleControl(&gyro_z, &pid_control);
           // AngularVelocityControl(&gyro_z, &pid_control);
         }
@@ -100,7 +100,7 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
         if (cnt1kHz % 200 == 0)
         {
           // printf("%f \r\n", gyro_z.yaw);
-          // printf("%d, %d \r\n", encoder_LR.countL, encoder_LR.countR);
+          printf("%d, %d \r\n", encoder_LR.countL, encoder_LR.countR);
           // printf("%ld, %ld, %f \r\n", ir_sensor.ir_fl, ir_sensor.ir_fr, bat_voltage.bat_vol);
           // printf("%d \r\n", pid_control.input);
         }
@@ -171,6 +171,9 @@ int main(void)
   PIDControlInit(&pid_control);
   IRPwmStart();
   GyroOffsetCalc(&gyro_z);
+
+  int count = 0;
+  int SW_read = 0;
   // FanMotorDrive();
   /* USER CODE END 2 */
 
@@ -181,6 +184,47 @@ int main(void)
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
+    // Select Mode
+    if (HAL_GPIO_ReadPin(GPIOB, GPIO_PIN_2) == 0)
+    {
+      count++;
+      if (count > 200)
+      {
+        SW_read++;
+        if (SW_read > 2)
+        {
+          SW_read = 0;
+        }
+        count = 0;
+      }
+    }
+
+    if (SW_read == 0)
+    {
+      // HAL_GPIO_WritePin(GPIOC, GPIO_PIN_8, GPIO_PIN_RESET);
+      HAL_GPIO_WritePin(GPIOC, GPIO_PIN_9, GPIO_PIN_RESET);
+    }
+    else if (SW_read == 1)
+    {
+      // HAL_GPIO_WritePin(GPIOC, GPIO_PIN_8, GPIO_PIN_SET);
+      HAL_GPIO_WritePin(GPIOC, GPIO_PIN_9, GPIO_PIN_SET);
+      // if(&ir_sensor.ir_fl > 2100 && &ir_sensor.ir_fr > 2100){
+      //   flag_mode = true;
+      //   __HAL_TIM_SET_COMPARE(&htim2, TIM_CHANNEL_1, 10);
+      //   HAL_Delay(50);
+      //   __HAL_TIM_SET_COMPARE(&htim2, TIM_CHANNEL_1, 0);
+      // }
+    }
+    // else if (SW_read == 2)
+    // {
+    //   HAL_GPIO_WritePin(GPIOC, GPIO_PIN_8, GPIO_PIN_RESET);
+    //   HAL_GPIO_WritePin(GPIOC, GPIO_PIN_9, GPIO_PIN_SET);
+    // }
+    // else
+    // {
+    //   HAL_GPIO_WritePin(GPIOC, GPIO_PIN_8, GPIO_PIN_SET);
+    //   HAL_GPIO_WritePin(GPIOC, GPIO_PIN_9, GPIO_PIN_SET);
+    // }
   }
   /* USER CODE END 3 */
 }

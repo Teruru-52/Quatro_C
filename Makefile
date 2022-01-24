@@ -68,7 +68,8 @@ Core/Src/encoder.c \
 Core/Src/gyro.c \
 Core/Src/ir_sensor.c \
 Core/Src/fan_motor.c \
-Core/Src/flash_memory.c
+Core/Src/flash_memory.c \
+Core/Src/battery.c
 
 # ASM sources
 ASM_SOURCES =  \
