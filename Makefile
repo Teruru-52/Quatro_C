@@ -71,6 +71,10 @@ Core/Src/fan_motor.c \
 Core/Src/flash_memory.c \
 Core/Src/battery.c
 
+# Wildcard
+# C_SOURCES := $(wildcard Core/Src/*.c) \
+# 			 $(wildcard Drivers/STM32F4xx_HAL_Driver/Src/*.c)
+
 # ASM sources
 ASM_SOURCES =  \
 startup_stm32f405xx.s

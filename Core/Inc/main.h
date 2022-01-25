@@ -36,6 +36,7 @@ extern "C" {
 #include <stdint.h>
 #include <stdbool.h>
 #include <string.h>
+#include <math.h>
 
 #include "adc.h"
 #include "dma.h"

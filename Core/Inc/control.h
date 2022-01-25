@@ -12,7 +12,7 @@
 #define GYRO_PID_KD  0
 
 #define PID_SAMPLING_TIME   0.001f
-#define D_FILTER_COFF       0.025f
+#define D_FILTER_COFF       0.025f //3.98Hz
 
 #define STANDARD_INPUT 0
 
