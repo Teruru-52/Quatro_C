@@ -4,7 +4,7 @@ static float pre_error;
 static float sum_error = 0.0;
 static float pre_error2;
 static float sum_error2 = 0.0;
-static float pre_deriv2 = 0.0;
+static float pre_deriv2;
 
 // static float dt_recip;  // 1/sampling time
 
@@ -37,6 +37,7 @@ void AngularVelocityControl(Gyro_Typedef *gyro, Control_Typedef *pid){
   deriv2 = (error2 - pre_error2)/pid->ts;
   deriv2 = pre_deriv2 + (deriv2 - pre_deriv2)*D_FILTER_COFF;
   pid->input = pid->kp2*error2 + pid->ki2*sum_error2 + pid->kd2*deriv2;
+
   if(pid->input > 0){
     __HAL_TIM_SET_COMPARE(&htim5, TIM_CHANNEL_1, STANDARD_INPUT+pid->input);
     __HAL_TIM_SET_COMPARE(&htim5, TIM_CHANNEL_2, 0);
@@ -50,5 +51,5 @@ void AngularVelocityControl(Gyro_Typedef *gyro, Control_Typedef *pid){
     __HAL_TIM_SET_COMPARE(&htim5, TIM_CHANNEL_4, STANDARD_INPUT-pid->input);
   }
   pre_error2 = error2;
-  deriv2 = pre_deriv2;
+  pre_deriv2 = deriv2;
 }
