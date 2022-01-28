@@ -3,15 +3,10 @@
 static uint16_t dma_f[3];
 static uint16_t dma_b[2];
 
-// static uint32_t fl[32];
-// static uint32_t fr[32];
-// static uint32_t bl[32];
-// static uint32_t br[32];
-
-static uint32_t fl[16];
-static uint32_t fr[16];
-static uint32_t bl[16];
-static uint32_t br[16];
+static uint32_t fl[SAMPLING_COUNT];
+static uint32_t fr[SAMPLING_COUNT];
+static uint32_t bl[SAMPLING_COUNT];
+static uint32_t br[SAMPLING_COUNT];
 
 void IRPwmStart()
 {

@@ -72,16 +72,16 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 {
   if (htim == &htim1) //割込み16kHz
   {
-    ReadFrontIRSensor(&ir_sensor, &bat_voltage);
-    ReadBackIRSensor(&ir_sensor);
-    cnt16kHz = (cnt16kHz + 1) % 16;
     if (flag_offset == true)
     {
+      // ReadFrontIRSensor(&ir_sensor, &bat_voltage);
+      // ReadBackIRSensor(&ir_sensor);
+      cnt16kHz = (cnt16kHz + 1) % 16;
       if (cnt16kHz == 0) //割込み1kHz
       {
-        GetIRSensorData(&ir_sensor);
+        // GetIRSensorData(&ir_sensor);
         GetGyroData(&gyro_z);
-        GetEncoderData(&encoder_LR);
+        // GetEncoderData(&encoder_LR);
         cnt1kHz = (cnt1kHz + 1) % 1000;
 
         if (cnt1kHz % 10 == 0)
@@ -101,12 +101,12 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 
         if (cnt1kHz % 200 == 0)
         {
-          // printf("%f \r\n", gyro_z.yaw);
+          printf("%f \r\n", gyro_z.yaw);
           // printf("%f, %f \r\n", gyro_z.gz, pid_control.ref2);
           // printf("%f, %f, %d \r\n", gyro_z.yaw, bat_voltage.bat_vol, pid_control.u_ang);
           // printf("%d, %d \r\n", encoder_LR.countL, encoder_LR.countR);
           // printf("%ld, %ld, %f \r\n", ir_sensor.ir_fl, ir_sensor.ir_fr, bat_voltage.bat_vol);
-          printf("%ld, %ld, %ld, %ld \r\n", ir_sensor.ir_fl, ir_sensor.ir_fr, ir_sensor.ir_bl, ir_sensor.ir_br);
+          // printf("%ld, %ld, %ld, %ld \r\n", ir_sensor.ir_fl, ir_sensor.ir_fr, ir_sensor.ir_bl, ir_sensor.ir_br);
           // printf("%d \r\n", pid_control.u_ang);
         }
       }
@@ -170,12 +170,13 @@ int main(void)
   HAL_TIM_PWM_Start(&htim10, TIM_CHANNEL_1);
   HAL_TIM_PWM_Start(&htim11, TIM_CHANNEL_1);
 
-  setbuf(stdout, NULL);
   GyroInit(); // who_am_i
+  setbuf(stdout, NULL);
   IIRInit();
   PIDControlInit(&pid_control);
   IRPwmStart();
   GyroOffsetCalc(&gyro_z);
+
 
   int count = 0;
   int SW_read = 0;
