@@ -19,6 +19,8 @@
 #define GYRO_ZOUT_H       0x47
 #define GYRO_ZOUT_L       0x48
 
+#define GYRO_FACTOR       16.4
+
 struct Battery_Typedef;
 
 typedef struct

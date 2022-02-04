@@ -9,6 +9,8 @@
         "gyro.h": "c",
         "tim.h": "c",
         "stdint.h": "c",
-        "usart.h": "c"
+        "usart.h": "c",
+        "sstream": "c",
+        "streambuf": "c"
     }
 }

@@ -3,6 +3,8 @@
 #include "main.h"
 #include "battery.h"
 
+#define SAMPLING_COUNT 16
+
 typedef struct
 {
     uint32_t ir_fl, ir_fr, ir_bl, ir_br;

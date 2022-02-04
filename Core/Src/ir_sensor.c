@@ -3,15 +3,10 @@
 static uint16_t dma_f[3];
 static uint16_t dma_b[2];
 
-// static uint32_t fl[32];
-// static uint32_t fr[32];
-// static uint32_t bl[32];
-// static uint32_t br[32];
-
-static uint32_t fl[16];
-static uint32_t fr[16];
-static uint32_t bl[16];
-static uint32_t br[16];
+static uint32_t fl[SAMPLING_COUNT];
+static uint32_t fr[SAMPLING_COUNT];
+static uint32_t bl[SAMPLING_COUNT];
+static uint32_t br[SAMPLING_COUNT];
 
 void IRPwmStart()
 {
@@ -23,18 +18,10 @@ void ReadFrontIRSensor(IR_SENSOR_Typedef *sensor, Battery_Typedef *battery)
 {
   HAL_ADC_Start_DMA(&hadc1, (uint32_t *)dma_f, 3);
 
-  uint32_t ave_fl = 0;
-  uint32_t ave_fr = 0;
+  uint32_t max_fl = 0;
+  uint32_t max_fr = 0;
 
-  // FFT shift
-  // for(int i = 32; i > 0; i--){
-  //   fl[i] = fl[i - 1];
-  //   fr[i] = fr[i - 1];
-  // }
-  // fl[0] = dma_f[0];
-  // fr[0] = dma_f[1];
-
-  for (int i = 15; i > 0; i--)
+  for (int i = SAMPLING_COUNT - 1; i > 0; i--)
   {
     fl[i] = fl[i - 1];
     fr[i] = fr[i - 1];
@@ -42,14 +29,16 @@ void ReadFrontIRSensor(IR_SENSOR_Typedef *sensor, Battery_Typedef *battery)
   fl[0] = dma_f[0];
   fr[0] = dma_f[1];
 
-  for (int i = 15; i >= 0; i--)
+  for (int i = SAMPLING_COUNT - 1; i >= 0; i--)
   {
-    ave_fl += fl[i];
-    ave_fr += fr[i];
+    if (fl[i] > max_fl)
+      max_fl = fl[i];
+    if (fr[i] > max_fr)
+      max_fr = fr[i];
   }
 
-  sensor->ir_fl = ave_fl / 16;
-  sensor->ir_fr = ave_fr / 16;
+  sensor->ir_fl = max_fl;
+  sensor->ir_fr = max_fr;
 
   battery->bat_vol = (float)dma_f[2] * 3.3 / 4096 * 3;
 }
@@ -58,10 +47,10 @@ void ReadBackIRSensor(IR_SENSOR_Typedef *sensor)
 {
   HAL_ADC_Start_DMA(&hadc2, (uint32_t *)dma_b, 2);
 
-  uint32_t ave_bl = 0;
-  uint32_t ave_br = 0;
+  uint32_t max_bl = 0;
+  uint32_t max_br = 0;
 
-  for (int i = 15; i > 0; i--)
+  for (int i = SAMPLING_COUNT - 1; i > 0; i--)
   {
     bl[i] = bl[i - 1];
     br[i] = br[i - 1];
@@ -69,14 +58,16 @@ void ReadBackIRSensor(IR_SENSOR_Typedef *sensor)
   bl[0] = dma_b[0];
   br[0] = dma_b[1];
 
-  for (int i = 15; i >= 0; i--)
+  for (int i = SAMPLING_COUNT - 1; i >= 0; i--)
   {
-    ave_bl += bl[i];
-    ave_br += br[i];
+    if (bl[i] > max_bl)
+      max_bl = bl[i];
+    if (br[i] > max_br)
+      max_br = br[i];
   }
 
-  sensor->ir_bl = ave_bl / 16;
-  sensor->ir_br = ave_br / 16;
+  sensor->ir_bl = max_bl;
+  sensor->ir_br = max_br;
 }
 
 void GetIRSensorData(IR_SENSOR_Typedef *sensor)

@@ -32,7 +32,7 @@ uint8_t read_byte(uint8_t reg)
   tx_data[1] = 0x00;  // dummy
 
   HAL_GPIO_WritePin(GPIOA, GPIO_PIN_4, RESET);
-  HAL_SPI_TransmitReceive(&hspi1, tx_data, rx_data, 2, 1000);
+  HAL_SPI_TransmitReceive(&hspi1, tx_data, rx_data, 2, 1);
   HAL_GPIO_WritePin(GPIOA, GPIO_PIN_4, SET);
 
   return rx_data[1];
@@ -43,12 +43,12 @@ void write_byte(uint8_t reg, uint8_t data)
   uint8_t rx_data[2];
   uint8_t tx_data[2];
 
-  //tx_data[0] = reg & 0x7F;
-  tx_data[0] = reg | 0x00;
+  tx_data[0] = reg & 0x7F;
+//   tx_data[0] = reg | 0x00;
   tx_data[1] = data;  // write data
 
   HAL_GPIO_WritePin(GPIOA, GPIO_PIN_4, RESET); //CSピン立ち下げ
-  HAL_SPI_TransmitReceive(&hspi1, tx_data, rx_data, 2, 1000);
+  HAL_SPI_TransmitReceive(&hspi1, tx_data, rx_data, 2, 1);
   HAL_GPIO_WritePin(GPIOA, GPIO_PIN_4, SET); //CSピン立ち上げ
 }
 
@@ -63,25 +63,33 @@ void IIRInit()
 
 void GyroInit()
 {
+    // turn on LED
+    HAL_GPIO_WritePin(GPIOC, GPIO_PIN_9, GPIO_PIN_SET);
+
     uint8_t who_am_i;
+
     HAL_Delay(100);             // wait start up
     who_am_i = read_byte(WHO_AM_I); // read who am i
-    // printf("who_am_i = 0x%x\r\n",who_am_i); // check who am i value
+    printf("who_am_i = 0x%x\r\n",who_am_i); // check who am i value
+    HAL_Delay(10);
+    who_am_i = read_byte(WHO_AM_I); // read who am i
+    printf("who_am_i = 0x%x\r\n",who_am_i); // check who am i value
+    
     // error check
     if (who_am_i != 0x70)
     {
         printf("gyro_error \r\n");
+        // turn off LED
+        HAL_GPIO_WritePin(GPIOC, GPIO_PIN_9, GPIO_PIN_RESET);
     }
+
     HAL_Delay(50);
-    write_byte(PWR_MGMT_1, 0x80); // 3. set pwr_might (20MHz)
-    HAL_Delay(100);
-    write_byte(PWR_MGMT_1, 0x00); // initialization
-    HAL_Delay(100);
-    write_byte(CONFIG, 0x00); // 4. set config (FSYNCはNC)
-    HAL_Delay(100);
+    write_byte(PWR_MGMT_1, 0x00); // set pwr_might (20MHz)
+    HAL_Delay(50);
+    write_byte(CONFIG, 0x00); // set config (FSYNCはNC)
+    HAL_Delay(50);
     write_byte(GYRO_CONFIG, 0x18); // set gyro config (2000dps)
-    HAL_Delay(100);
-    // printf("0x%x\r\n", read_byte(0x1B));
+    HAL_Delay(50);
 }
 
 void GyroOffsetCalc(Gyro_Typedef *gyro)
@@ -94,9 +102,9 @@ void GyroOffsetCalc(Gyro_Typedef *gyro)
     for (int i = 0; i < 1000; i++)
     {
         // H:8bit shift, Link h and l
-        gz_raw = (int16_t)(((uint16_t)read_byte(GYRO_ZOUT_H) << 8) | (uint16_t)read_byte(GYRO_ZOUT_L));
+        gz_raw = (int16_t)((uint16_t)(read_byte(GYRO_ZOUT_H) << 8) | (uint16_t)read_byte(GYRO_ZOUT_L));
         // printf("%d\r\n", gz_raw);
-        gz = (float)(gz_raw / 16.4); // dps to deg/sec
+        gz = (float)(gz_raw / GYRO_FACTOR); // dps to deg/sec
 
         sum += gz;
         HAL_Delay(1);
@@ -110,6 +118,8 @@ void GyroOffsetCalc(Gyro_Typedef *gyro)
     __HAL_TIM_SET_COMPARE(&htim2, TIM_CHANNEL_1, 0);
 
     BatteryCheckOff();
+    // turn off LED
+    HAL_GPIO_WritePin(GPIOC, GPIO_PIN_9, GPIO_PIN_RESET);
 
     IIRInit();
 
@@ -122,9 +132,9 @@ void GetGyroData(Gyro_Typedef *gyro)
     float gz;
 
     // H:8bit shift, Link h and l
-    gz_raw = (int16_t)(((uint16_t)read_byte(GYRO_ZOUT_H) << 8) | (uint16_t)read_byte(GYRO_ZOUT_L));
+    gz_raw = (int16_t)((uint16_t)(read_byte(GYRO_ZOUT_H) << 8) | (uint16_t)read_byte(GYRO_ZOUT_L));
     // printf("%d\r\n", gz_raw);
-    gz = (float)(gz_raw / 16.4) - gyro->offset; // dps to deg/sec
+    gz = (float)(gz_raw / GYRO_FACTOR) - gyro->offset; // dps to deg/sec
 
     float filtered_gyro_z = gyro_fil_coeff.b0*gz + gyro_fil_coeff.b1*gyro_x_pre[0] + gyro_fil_coeff.b2*gyro_x_pre[1]
                                                     + gyro_fil_coeff.a1*gyro_y_pre[0] + gyro_fil_coeff.a2*gyro_y_pre[1];
