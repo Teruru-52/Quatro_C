@@ -2,6 +2,7 @@
 
 static float yaw = 0;
 bool flag_offset = false;
+bool flag_gyro = false;
 
 static float gyro_y_pre[4], gyro_x_pre[4];
 
@@ -72,9 +73,16 @@ void GyroInit()
     who_am_i = read_byte(WHO_AM_I); // read who am i
     printf("who_am_i = 0x%x\r\n",who_am_i); // check who am i value
     HAL_Delay(10);
-    who_am_i = read_byte(WHO_AM_I); // read who am i
-    printf("who_am_i = 0x%x\r\n",who_am_i); // check who am i value
-    
+    while(flag_gyro == false)
+    {
+        who_am_i = read_byte(WHO_AM_I);
+        if (who_am_i == 0x70) flag_gyro = true;
+    }
+    // Speaker
+    __HAL_TIM_SET_COMPARE(&htim2, TIM_CHANNEL_1, 10);
+    HAL_Delay(50);
+    __HAL_TIM_SET_COMPARE(&htim2, TIM_CHANNEL_1, 0);
+
     // error check
     if (who_am_i != 0x70)
     {
@@ -111,11 +119,6 @@ void GyroOffsetCalc(Gyro_Typedef *gyro)
     }
     gyro->offset = sum / 1000.0;
     // printf("%f\r\n", gyro_offset);
-
-    // Speaker
-    __HAL_TIM_SET_COMPARE(&htim2, TIM_CHANNEL_1, 10);
-    HAL_Delay(50);
-    __HAL_TIM_SET_COMPARE(&htim2, TIM_CHANNEL_1, 0);
 
     BatteryCheckOff();
     // turn off LED

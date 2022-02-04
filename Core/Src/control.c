@@ -9,6 +9,8 @@ static float pre_error3;
 static float sum_error3 = 0.0;
 static float pre_deriv3;
 
+extern int count_idnt;
+
 // static float dt_recip;  // 1/sampling time
 
 void PIDControlInit(Control_Typedef *pid){
@@ -91,4 +93,23 @@ void PIDControl(Control_Typedef *pid){
     __HAL_TIM_SET_COMPARE(&htim5, TIM_CHANNEL_3, MAX_INPUT + pid->u_pid);
     __HAL_TIM_SET_COMPARE(&htim5, TIM_CHANNEL_4, MAX_INPUT);
   }
+}
+
+void RotationControl(Battery_Typedef *battery, Data_Typedef *data, Gyro_Typedef *gyro)
+{
+  int u_iden = (int)(1023.0 / battery->bat_vol * 1.5); // u_iden = 1.5 [V]
+  data->output[count_idnt] = gyro->gz;
+  data->input[count_idnt] = u_iden;
+
+  __HAL_TIM_SET_COMPARE(&htim5, TIM_CHANNEL_1, MAX_INPUT);
+  __HAL_TIM_SET_COMPARE(&htim5, TIM_CHANNEL_2, MAX_INPUT - u_iden);
+  __HAL_TIM_SET_COMPARE(&htim5, TIM_CHANNEL_3, MAX_INPUT);
+  __HAL_TIM_SET_COMPARE(&htim5, TIM_CHANNEL_4, MAX_INPUT - u_iden);
+}
+
+void MotorStop(){
+  __HAL_TIM_SET_COMPARE(&htim5, TIM_CHANNEL_1, 0);
+  __HAL_TIM_SET_COMPARE(&htim5, TIM_CHANNEL_2, 0);
+  __HAL_TIM_SET_COMPARE(&htim5, TIM_CHANNEL_3, 0);
+  __HAL_TIM_SET_COMPARE(&htim5, TIM_CHANNEL_4, 0);
 }

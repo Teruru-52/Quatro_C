@@ -3,14 +3,16 @@
 #include "main.h"
 #include "gyro.h"
 #include "encoder.h"
+#include "battery.h"
+#include "flash_memory.h"
 
 #define YAW_PID_KP   30
 #define YAW_PID_KI   10
 #define YAW_PID_KD   1.0
 
-#define GYRO_PID_KP  100
-#define GYRO_PID_KI  70
-#define GYRO_PID_KD  0
+#define GYRO_PID_KP  0.0147
+#define GYRO_PID_KI  0.0202
+#define GYRO_PID_KD  0.00164
 
 #define VEL_PID_KP  1
 #define VEL_PID_KI  0
@@ -23,6 +25,8 @@
 
 struct Gyro_Typedef;
 struct Encoder_Typedef;
+struct Battery_Typedef;
+struct Data_Typedef;
 
 typedef struct
 {
@@ -38,6 +42,8 @@ void PIDControlInit(Control_Typedef *pid);
 void AngleControl(Gyro_Typedef *gyro, Control_Typedef *pid);
 void AngularVelocityControl(Gyro_Typedef *gyro, Control_Typedef *pid);
 void VelocityControl(Encoder_Typedef *encoder, Control_Typedef *pid);
-void PIDControl(Control_Typedef *pid);
+void Control(Control_Typedef *pid);
+void RotationControl(Battery_Typedef *battery, Data_Typedef *data, Gyro_Typedef *gyro);
+void MotorStop();
 
 #endif // _CONTROL_H_
