@@ -2,6 +2,7 @@
 
 static float yaw = 0;
 bool flag_offset = false;
+bool flag_gyro = false;
 
 static float gyro_y_pre[4], gyro_x_pre[4];
 
@@ -65,6 +66,7 @@ void GyroInit()
 {
     // turn on LED
     HAL_GPIO_WritePin(GPIOC, GPIO_PIN_9, GPIO_PIN_SET);
+    BatteryCheckOn(&bat_voltage);
 
     uint8_t who_am_i;
 
@@ -72,16 +74,23 @@ void GyroInit()
     who_am_i = read_byte(WHO_AM_I); // read who am i
     printf("who_am_i = 0x%x\r\n",who_am_i); // check who am i value
     HAL_Delay(10);
-    who_am_i = read_byte(WHO_AM_I); // read who am i
-    printf("who_am_i = 0x%x\r\n",who_am_i); // check who am i value
-    
-    // error check
-    if (who_am_i != 0x70)
+
+    while (flag_gyro == false)
     {
-        printf("gyro_error \r\n");
-        // turn off LED
-        HAL_GPIO_WritePin(GPIOC, GPIO_PIN_9, GPIO_PIN_RESET);
+        who_am_i = read_byte(WHO_AM_I);
+        if (who_am_i == 0x70)
+        {
+            flag_gyro = true; 
+        }
+        // error check
+        else
+        {
+            printf("who_am_i = 0x%x\r\n",who_am_i);
+            HAL_Delay(10);
+            // printf("gyro_error \r\n");
+        }
     }
+
 
     HAL_Delay(50);
     write_byte(PWR_MGMT_1, 0x00); // set pwr_might (20MHz)
@@ -90,12 +99,15 @@ void GyroInit()
     HAL_Delay(50);
     write_byte(GYRO_CONFIG, 0x18); // set gyro config (2000dps)
     HAL_Delay(50);
+
+    // Speaker
+    __HAL_TIM_SET_COMPARE(&htim2, TIM_CHANNEL_1, 10);
+    HAL_Delay(50);
+    __HAL_TIM_SET_COMPARE(&htim2, TIM_CHANNEL_1, 0);
 }
 
 void GyroOffsetCalc(Gyro_Typedef *gyro)
 {
-    BatteryCheckOn(&bat_voltage);
-
     int16_t gz_raw;
     float gz;
     float sum = 0;
@@ -111,11 +123,6 @@ void GyroOffsetCalc(Gyro_Typedef *gyro)
     }
     gyro->offset = sum / 1000.0;
     // printf("%f\r\n", gyro_offset);
-
-    // Speaker
-    __HAL_TIM_SET_COMPARE(&htim2, TIM_CHANNEL_1, 10);
-    HAL_Delay(50);
-    __HAL_TIM_SET_COMPARE(&htim2, TIM_CHANNEL_1, 0);
 
     BatteryCheckOff();
     // turn off LED

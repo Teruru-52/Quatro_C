@@ -70,8 +70,8 @@ void VelocityControl(Encoder_Typedef *encoder, Control_Typedef *pid){
   pre_deriv3 = deriv3;
 }
 
-void PIDControl(Control_Typedef *pid){
-  pid->u_pid = pid->u_ang + pid->u_vel;
+void PIDControl(Control_Typedef *pid, Battery_Typedef *battery){
+  pid->u_pid = (int)((pid->u_ang + pid->u_vel) * 1023.0 / battery->bat_vol);
 
   if (pid->u_pid >= MAX_INPUT)
     pid->u_pid = MAX_INPUT;
