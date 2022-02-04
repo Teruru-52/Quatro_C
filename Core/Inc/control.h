@@ -5,11 +5,11 @@
 #include "encoder.h"
 
 #define YAW_PID_KP   30
-#define YAW_PID_KI   0.3
+#define YAW_PID_KI   10
 #define YAW_PID_KD   1.0
 
 #define GYRO_PID_KP  100
-#define GYRO_PID_KI  10
+#define GYRO_PID_KI  70
 #define GYRO_PID_KD  0
 
 #define VEL_PID_KP  1
