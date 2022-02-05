@@ -97,7 +97,7 @@ void PIDControl(Control_Typedef *pid){
 
 void RotationControl(Battery_Typedef *battery, Data_Typedef *data, Gyro_Typedef *gyro)
 {
-  int u_iden = (int)(1023.0 / battery->bat_vol * 1.5); // u_iden = 1.5 [V]
+  int u_iden = (int)(1000.0 / battery->bat_vol * 2.0); // u_iden = 2.0 [V]
   data->output[count_idnt] = gyro->gz;
   data->input[count_idnt] = u_iden;
 

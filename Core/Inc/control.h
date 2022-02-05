@@ -18,7 +18,7 @@
 #define VEL_PID_KI  0
 #define VEL_PID_KD  0
 
-#define MAX_INPUT 999
+#define MAX_INPUT 1000
 
 #define PID_SAMPLING_TIME   0.001f
 #define D_FILTER_COFF       0.025f //3.98Hz
