@@ -83,7 +83,7 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
         GetGyroData(&gyro_z);
         // GetEncoderData(&encoder_LR);
         AngleControl(&gyro_z, &pid_control);
-        // AngularVelocityControl(&gyro_z, &pid_control);
+        AngularVelocityControl(&gyro_z, &pid_control);
         PIDControl(&pid_control, &bat_voltage);
         cnt1kHz = (cnt1kHz + 1) % 1000;
 
@@ -107,7 +107,7 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
           // printf("%d, %d \r\n", encoder_LR.countL, encoder_LR.countR);
           // printf("%ld, %ld, %f \r\n", ir_sensor.ir_fl, ir_sensor.ir_fr, bat_voltage.bat_vol);
           // printf("%ld, %ld, %ld, %ld \r\n", ir_sensor.ir_fl, ir_sensor.ir_fr, ir_sensor.ir_bl, ir_sensor.ir_br);
-          // printf("%f, %d \r\n", pid_control.u_ang, pid_control.u_pid);
+          printf("%f, %d \r\n", pid_control.u_ang, pid_control.u_pid);
         }
       }
     }

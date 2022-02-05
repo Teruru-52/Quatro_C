@@ -5,18 +5,23 @@
 #include "encoder.h"
 #include "battery.h"
 
-#define YAW_PID_KP   30
-#define YAW_PID_KI   10
+#define YAW_PID_KP   10
+#define YAW_PID_KI   3
 #define YAW_PID_KD   1.0
 
 // #define GYRO_PID_KP  2.06
 // #define GYRO_PID_KI  0.0285
 // #define GYRO_PID_KD  37.3
 
-#define GYRO_PID_KP  1.28
-// #define GYRO_PID_KP  100
-#define GYRO_PID_KI  0.0153
-#define GYRO_PID_KD  22
+// PID
+#define GYRO_PID_KP  3.68
+#define GYRO_PID_KI  186
+#define GYRO_PID_KD  0.00446
+
+// PIDF
+// #define GYRO_PID_KP 1.15
+// #define GYRO_PID_KI 0.0148
+// #define GYRO_PID_KD 20.6
 
 #define VEL_PID_KP  1
 #define VEL_PID_KI  0
@@ -25,7 +30,7 @@
 #define MAX_INPUT 999
 
 #define PID_SAMPLING_TIME   0.001f
-#define D_FILTER_COFF       0.025f //3.98Hz
+// #define D_FILTER_COFF       0.025f //3.98Hz
 
 struct Gyro_Typedef;
 struct Encoder_Typedef;

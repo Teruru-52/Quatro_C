@@ -39,7 +39,7 @@ void AngleControl(Gyro_Typedef *gyro, Control_Typedef *pid){
   float error, deriv;
   error = (pid->ref - gyro->yaw) * M_PI / 180;
   sum_error += error*pid->ts;
-  deriv = (error - pre_error)/pid->ts;
+  deriv = (pre_error - error)/pid->ts;
   pid->ref2 = pid->kp1*error + pid->ki1*sum_error + pid->kd1*deriv;
   
   pre_error = error;
@@ -49,8 +49,8 @@ void AngularVelocityControl(Gyro_Typedef *gyro, Control_Typedef *pid){
   float error2, deriv2;
   error2 = (pid->ref2 - gyro->gz) * M_PI / 180;
   sum_error2 += error2*pid->ts;
-  deriv2 = (error2 - pre_error2)/pid->ts;
-  deriv2 = pre_deriv2 + (deriv2 - pre_deriv2)*D_FILTER_COFF;
+  deriv2 = (pre_error2 - error2)/pid->ts;
+  // deriv2 = pre_deriv2 + (deriv2 - pre_deriv2)*D_FILTER_COFF;
   pid->u_ang = pid->kp2*error2 + pid->ki2*sum_error2 + pid->kd2*deriv2;
 
   pre_error2 = error2;
@@ -62,8 +62,8 @@ void VelocityControl(Encoder_Typedef *encoder, Control_Typedef *pid){
   pid->vel = (encoder->countL + encoder->countR)/2;
   error3 = (pid->ref3 - pid->vel);
   sum_error3 += error3*pid->ts;
-  deriv3 = (error3 - pre_error3)/pid->ts;
-  deriv3 = pre_deriv3 + (deriv3 - pre_deriv3)*D_FILTER_COFF;
+  deriv3 = (pre_error3 - error3)/pid->ts;
+  // deriv3 = pre_deriv3 + (deriv3 - pre_deriv3)*D_FILTER_COFF;
   pid->u_vel = pid->kp3*error3 + pid->ki3*sum_error3 + pid->kd3*deriv3;
 
   pre_error3 = error3;
@@ -71,7 +71,7 @@ void VelocityControl(Encoder_Typedef *encoder, Control_Typedef *pid){
 }
 
 void PIDControl(Control_Typedef *pid, Battery_Typedef *battery){
-  pid->u_pid = (int)((pid->u_ang + pid->u_vel) * 1023.0 / battery->bat_vol);
+  pid->u_pid = (pid->u_ang + pid->u_vel) * 100.0 / battery->bat_vol;
 
   if (pid->u_pid >= MAX_INPUT)
     pid->u_pid = MAX_INPUT;
