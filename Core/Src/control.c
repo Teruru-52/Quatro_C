@@ -37,7 +37,7 @@ void PIDControlInit(Control_Typedef *pid){
 
 void AngleControl(Gyro_Typedef *gyro, Control_Typedef *pid){
   float error, deriv;
-  error = (pid->ref - gyro->yaw) * M_PI / 180;
+  error = (pid->ref - gyro->yaw) * M_PI / 180; // [deg] to [rad]
   sum_error += error*pid->ts;
   deriv = (pre_error - error)/pid->ts;
   pid->ref2 = pid->kp1*error + pid->ki1*sum_error + pid->kd1*deriv;
@@ -47,10 +47,10 @@ void AngleControl(Gyro_Typedef *gyro, Control_Typedef *pid){
 
 void AngularVelocityControl(Gyro_Typedef *gyro, Control_Typedef *pid){
   float error2, deriv2;
-  error2 = (pid->ref2 - gyro->gz) * M_PI / 180;
+  error2 = (pid->ref2 - gyro->gz) * M_PI / 180; // [deg/s] to [rad/s]
   sum_error2 += error2*pid->ts;
-  deriv2 = (pre_error2 - error2)/pid->ts;
-  // deriv2 = pre_deriv2 + (deriv2 - pre_deriv2)*D_FILTER_COFF;
+  deriv2 = (pre_error2 - error2)/pid->ts; // PID
+  // deriv2 = D_NUM * (pre_deriv2 - D_DEN * deriv2); // PIDF
   pid->u_ang = pid->kp2*error2 + pid->ki2*sum_error2 + pid->kd2*deriv2;
 
   pre_error2 = error2;
@@ -71,7 +71,7 @@ void VelocityControl(Encoder_Typedef *encoder, Control_Typedef *pid){
 }
 
 void PIDControl(Control_Typedef *pid, Battery_Typedef *battery){
-  pid->u_pid = (pid->u_ang + pid->u_vel) * 100.0 / battery->bat_vol;
+  pid->u_pid = (int)(1000.0 / battery->bat_vol * (pid->u_ang + pid->u_vel));
 
   if (pid->u_pid >= MAX_INPUT)
     pid->u_pid = MAX_INPUT;
