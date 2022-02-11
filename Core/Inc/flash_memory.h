@@ -3,7 +3,7 @@
 #include "main.h"
 
 typedef struct{
-    float output[3000];
+    float output[3000], outputL[3000], outputR[3000];
     int input[3000];
 }Data_Typedef;
 

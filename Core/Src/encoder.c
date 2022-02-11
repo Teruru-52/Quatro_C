@@ -27,4 +27,8 @@ void GetEncoderData(Encoder_Typedef *encoder)
 
   encoder->countL = countl;
   encoder->countR = countr;
+
+  encoder->velocityL = (float)(countl) / 4096.0 * 2.0 * M_PI * 1000.0 * 11.0 / 43.0; // [rad/s]
+  encoder->velocityR = (float)(countr) / 4096.0 * 2.0 * M_PI * 1000.0 * 11.0 / 43.0; // gear ratio 43:11
+  encoder->velocity = (encoder->velocityL + encoder->velocityR) / 2.0;
 }

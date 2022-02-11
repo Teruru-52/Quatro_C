@@ -15,7 +15,8 @@ extern int count_mseq;
 
 // static float dt_recip;  // 1/sampling time
 
-void PIDControlInit(Control_Typedef *pid){
+void PIDControlInit(Control_Typedef *pid)
+{
   pid->ts = PID_SAMPLING_TIME;
   // Angle Control
   pid->kp1 = YAW_PID_KP;
@@ -32,79 +33,97 @@ void PIDControlInit(Control_Typedef *pid){
   pid->kp3 = VEL_PID_KP;
   pid->ki3 = VEL_PID_KI;
   pid->kd3 = VEL_PID_KD;
-  pid->ref3 = 0.0;
+  pid->ref3 = 100.0;
   pid->u_vel = 0.0;
 
-  pid->vel = 0.0;
-  pid->u_pid = 0.0;
+  pid->u_pid_left = 0.0;
+  pid->u_pid_right = 0.0;
 }
 
-void AngleControl(Gyro_Typedef *gyro, Control_Typedef *pid){
+void AngleControl(Gyro_Typedef *gyro, Control_Typedef *pid)
+{
   float error, deriv;
   error = (pid->ref - gyro->yaw) * M_PI / 180;
-  sum_error += error*pid->ts;
-  deriv = (error - pre_error)/pid->ts;
-  pid->ref2 = pid->kp1*error + pid->ki1*sum_error + pid->kd1*deriv;
-  
+  sum_error += error * pid->ts;
+  deriv = (error - pre_error) / pid->ts;
+  pid->ref2 = pid->kp1 * error + pid->ki1 * sum_error + pid->kd1 * deriv;
+
   pre_error = error;
 }
 
-void AngularVelocityControl(Gyro_Typedef *gyro, Control_Typedef *pid){
+void AngularVelocityControl(Gyro_Typedef *gyro, Control_Typedef *pid)
+{
   float error2, deriv2;
   error2 = (pid->ref2 - gyro->gz) * M_PI / 180;
-  sum_error2 += error2*pid->ts;
-  deriv2 = (error2 - pre_error2)/pid->ts;
-  deriv2 = pre_deriv2 + (deriv2 - pre_deriv2)*D_FILTER_COFF;
-  pid->u_ang = pid->kp2*error2 + pid->ki2*sum_error2 + pid->kd2*deriv2;
+  sum_error2 += error2 * pid->ts;
+  deriv2 = (error2 - pre_error2) / pid->ts;
+  deriv2 = pre_deriv2 + (deriv2 - pre_deriv2) * D_FILTER_COFF;
+  pid->u_ang = pid->kp2 * error2 + pid->ki2 * sum_error2 + pid->kd2 * deriv2;
 
   pre_error2 = error2;
   pre_deriv2 = deriv2;
 }
 
-void VelocityControl(Encoder_Typedef *encoder, Control_Typedef *pid){
+void VelocityControl(Encoder_Typedef *encoder, Control_Typedef *pid)
+{
   float error3, deriv3;
-  pid->vel = (encoder->countL + encoder->countR)/2;
-  error3 = (pid->ref3 - pid->vel);
-  sum_error3 += error3*pid->ts;
-  deriv3 = (error3 - pre_error3)/pid->ts;
-  deriv3 = pre_deriv3 + (deriv3 - pre_deriv3)*D_FILTER_COFF;
-  pid->u_vel = pid->kp3*error3 + pid->ki3*sum_error3 + pid->kd3*deriv3;
+  error3 = (pid->ref3 - encoder->velocity);
+  sum_error3 += error3 * pid->ts;
+  deriv3 = (error3 - pre_error3) / pid->ts;
+  // deriv3 = pre_deriv3 + (deriv3 - pre_deriv3)*D_FILTER_COFF;
+  pid->u_vel = pid->kp3 * error3 + pid->ki3 * sum_error3 + pid->kd3 * deriv3;
 
   pre_error3 = error3;
   pre_deriv3 = deriv3;
 }
 
-void PIDControl(Control_Typedef *pid){
-  pid->u_pid = pid->u_ang + pid->u_vel;
+void PIDControl(Control_Typedef *pid, Battery_Typedef *battery)
+{
+  pid->u_pid_left = (int)(MAX_INPUT / battery->bat_vol * (pid->u_vel + pid->u_ang));
+  pid->u_pid_right = (int)(MAX_INPUT / battery->bat_vol * (pid->u_vel - pid->u_ang));
 
-  if (pid->u_pid >= MAX_INPUT)
-    pid->u_pid = MAX_INPUT;
-  if (pid->u_pid <= -MAX_INPUT)
-    pid->u_pid = -MAX_INPUT;
+  if (pid->u_pid_left >= MAX_INPUT)
+    pid->u_pid_left = MAX_INPUT;
+  else if (pid->u_pid_left <= -MAX_INPUT)
+    pid->u_pid_left = -MAX_INPUT;
+    
+  if (pid->u_pid_right >= MAX_INPUT)
+    pid->u_pid_right = MAX_INPUT;
+  else if (pid->u_pid_right <= -MAX_INPUT)
+    pid->u_pid_right = -MAX_INPUT;
 
-  if (pid->u_pid > 0)
+  if (pid->u_pid_left > 0)
+  {
+    __HAL_TIM_SET_COMPARE(&htim5, TIM_CHANNEL_1, MAX_INPUT - pid->u_pid_left);
+    __HAL_TIM_SET_COMPARE(&htim5, TIM_CHANNEL_2, MAX_INPUT);
+  }
+  else
   {
     __HAL_TIM_SET_COMPARE(&htim5, TIM_CHANNEL_1, MAX_INPUT);
-    __HAL_TIM_SET_COMPARE(&htim5, TIM_CHANNEL_2, MAX_INPUT - pid->u_pid);
-    __HAL_TIM_SET_COMPARE(&htim5, TIM_CHANNEL_3, MAX_INPUT);
-    __HAL_TIM_SET_COMPARE(&htim5, TIM_CHANNEL_4, MAX_INPUT - pid->u_pid);
+    __HAL_TIM_SET_COMPARE(&htim5, TIM_CHANNEL_2, MAX_INPUT - pid->u_pid_left);
   }
-  else{
-    __HAL_TIM_SET_COMPARE(&htim5, TIM_CHANNEL_1, MAX_INPUT + pid->u_pid);
-    __HAL_TIM_SET_COMPARE(&htim5, TIM_CHANNEL_2, MAX_INPUT);
-    __HAL_TIM_SET_COMPARE(&htim5, TIM_CHANNEL_3, MAX_INPUT + pid->u_pid);
+  if (pid->u_pid_right > 0)
+  {
+    __HAL_TIM_SET_COMPARE(&htim5, TIM_CHANNEL_3, MAX_INPUT);
+    __HAL_TIM_SET_COMPARE(&htim5, TIM_CHANNEL_4, MAX_INPUT - pid->u_pid_right);
+  }
+  else
+  {
+    __HAL_TIM_SET_COMPARE(&htim5, TIM_CHANNEL_3, MAX_INPUT - pid->u_pid_right);
     __HAL_TIM_SET_COMPARE(&htim5, TIM_CHANNEL_4, MAX_INPUT);
   }
 }
 
-void RotationControl(Battery_Typedef *battery, Data_Typedef *data, Gyro_Typedef *gyro)
+void TranslationControl(Battery_Typedef *battery, Data_Typedef *data, Encoder_Typedef *encoder)
 {
-  int u_iden = (int)(1000.0 / battery->bat_vol * 2.0); // u_iden = 2.0 [V]
-  data->output[count_idnt] = gyro->gz;
+  int u_iden = (int)(1000.0 / battery->bat_vol); // 1.0[V]
+  // data->outputL[count_idnt] = encoder->velocityL;
+  // data->outputR[count_idnt] = encoder->velocityR;
+  data->output[count_idnt] = encoder->velocity;
   data->input[count_idnt] = u_iden;
 
-  __HAL_TIM_SET_COMPARE(&htim5, TIM_CHANNEL_1, MAX_INPUT);
-  __HAL_TIM_SET_COMPARE(&htim5, TIM_CHANNEL_2, MAX_INPUT - u_iden);
+  __HAL_TIM_SET_COMPARE(&htim5, TIM_CHANNEL_1, MAX_INPUT - u_iden);
+  __HAL_TIM_SET_COMPARE(&htim5, TIM_CHANNEL_2, MAX_INPUT);
   __HAL_TIM_SET_COMPARE(&htim5, TIM_CHANNEL_3, MAX_INPUT);
   __HAL_TIM_SET_COMPARE(&htim5, TIM_CHANNEL_4, MAX_INPUT - u_iden);
 }
@@ -241,33 +260,34 @@ void MSequenceGen(MSequence_Typedef *msequence) // n = 7, N = 127
   msequence->m_sequence[127] = -2;
 }
 
-void MSequenceInput(Data_Typedef *data, Gyro_Typedef *gyro, Battery_Typedef *battery, MSequence_Typedef *msequence){
-  int u_iden = (int)(1000.0 / battery->bat_vol * msequence->m_sequence[count_mseq]);
+// void MSequenceInput(Data_Typedef *data, Gyro_Typedef *gyro, Battery_Typedef *battery, MSequence_Typedef *msequence){
+//   int u_iden = (int)(1000.0 / battery->bat_vol * msequence->m_sequence[count_mseq]);
 
-   data->output[count_idntm] = gyro->gz;
-   data->input[count_idntm] = u_iden;
+//    data->output[count_idntm] = gyro->gz;
+//    data->input[count_idntm] = u_iden;
 
-  if (u_iden >= MAX_INPUT)
-    u_iden = MAX_INPUT;
-  if (u_iden <= -MAX_INPUT)
-    u_iden = -MAX_INPUT;
+//   if (u_iden >= MAX_INPUT)
+//     u_iden = MAX_INPUT;
+//   if (u_iden <= -MAX_INPUT)
+//     u_iden = -MAX_INPUT;
 
-  if (u_iden > 0)
-  {
-    __HAL_TIM_SET_COMPARE(&htim5, TIM_CHANNEL_1, MAX_INPUT);
-    __HAL_TIM_SET_COMPARE(&htim5, TIM_CHANNEL_2, MAX_INPUT - u_iden);
-    __HAL_TIM_SET_COMPARE(&htim5, TIM_CHANNEL_3, MAX_INPUT);
-    __HAL_TIM_SET_COMPARE(&htim5, TIM_CHANNEL_4, MAX_INPUT - u_iden);
-  }
-  else{
-    __HAL_TIM_SET_COMPARE(&htim5, TIM_CHANNEL_1, MAX_INPUT + u_iden);
-    __HAL_TIM_SET_COMPARE(&htim5, TIM_CHANNEL_2, MAX_INPUT);
-    __HAL_TIM_SET_COMPARE(&htim5, TIM_CHANNEL_3, MAX_INPUT + u_iden);
-    __HAL_TIM_SET_COMPARE(&htim5, TIM_CHANNEL_4, MAX_INPUT);
-  }
-}
+//   if (u_iden > 0)
+//   {
+//     __HAL_TIM_SET_COMPARE(&htim5, TIM_CHANNEL_1, MAX_INPUT);
+//     __HAL_TIM_SET_COMPARE(&htim5, TIM_CHANNEL_2, MAX_INPUT - u_iden);
+//     __HAL_TIM_SET_COMPARE(&htim5, TIM_CHANNEL_3, MAX_INPUT);
+//     __HAL_TIM_SET_COMPARE(&htim5, TIM_CHANNEL_4, MAX_INPUT - u_iden);
+//   }
+//   else{
+//     __HAL_TIM_SET_COMPARE(&htim5, TIM_CHANNEL_1, MAX_INPUT + u_iden);
+//     __HAL_TIM_SET_COMPARE(&htim5, TIM_CHANNEL_2, MAX_INPUT);
+//     __HAL_TIM_SET_COMPARE(&htim5, TIM_CHANNEL_3, MAX_INPUT + u_iden);
+//     __HAL_TIM_SET_COMPARE(&htim5, TIM_CHANNEL_4, MAX_INPUT);
+//   }
+// }
 
-void MotorStop(){
+void MotorStop()
+{
   __HAL_TIM_SET_COMPARE(&htim5, TIM_CHANNEL_1, 0);
   __HAL_TIM_SET_COMPARE(&htim5, TIM_CHANNEL_2, 0);
   __HAL_TIM_SET_COMPARE(&htim5, TIM_CHANNEL_3, 0);
