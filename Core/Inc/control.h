@@ -38,6 +38,10 @@ typedef struct
     int u_ang, u_vel, u_pid;
 } Control_Typedef;
 
+typedef struct{
+    float m_sequence[128];
+} MSequence_Typedef;
+
 void PIDControlInit(Control_Typedef *pid);
 void AngleControl(Gyro_Typedef *gyro, Control_Typedef *pid);
 void AngularVelocityControl(Gyro_Typedef *gyro, Control_Typedef *pid);
@@ -45,5 +49,7 @@ void VelocityControl(Encoder_Typedef *encoder, Control_Typedef *pid);
 void Control(Control_Typedef *pid);
 void RotationControl(Battery_Typedef *battery, Data_Typedef *data, Gyro_Typedef *gyro);
 void MotorStop();
+void MSequenceGen(MSequence_Typedef *msequence);
+void MSequenceInput(Data_Typedef *data, Gyro_Typedef *gyro, Battery_Typedef *battery, MSequence_Typedef *msequence);
 
 #endif // _CONTROL_H_

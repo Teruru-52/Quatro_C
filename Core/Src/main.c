@@ -39,6 +39,7 @@ IR_SENSOR_Typedef ir_sensor;
 Control_Typedef pid_control;
 extern Battery_Typedef bat_voltage;
 Data_Typedef data_iden;
+MSequence_Typedef m_seq;
 /* USER CODE END PTD */
 
 /* Private define ------------------------------------------------------------*/
@@ -67,9 +68,12 @@ void SystemClock_Config(void);
 bool flag_mode = false;
 extern bool flag_offset;
 int count_idnt = 0;
+int count_idntm = 0;
+int count_mseq = 0; // 12.5Hz
 int cnt16kHz = 0;
 int cnt1kHz = 0;
 int cnt100Hz = 0;
+int cnt50Hz = 0; // 20ms
 void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 {
   if (htim == &htim1) //割込み16kHz
@@ -80,18 +84,28 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
       cnt16kHz = (cnt16kHz + 1) % 16;
       if (cnt16kHz == 0) //割込み1kHz
       {
-        if (count_idnt >= 3000)
-        { // 3秒で停止
+        if (count_idntm >= 1000)
+        { // count_idnt 3秒で停止  // count_identm 2.54秒で停止
           flag_offset = false;
           MotorStop();
         }
         else
         {
-          GetGyroData(&gyro_z);
-          RotationControl(&bat_voltage, &data_iden, &gyro_z);
+          // GetGyroData(&gyro_z);
+          MSequenceInput(&data_iden, &gyro_z, &bat_voltage, &m_seq);
+          // RotationControl(&bat_voltage, &data_iden, &gyro_z);
         }
         count_idnt++;
         cnt1kHz = (cnt1kHz + 1) % 1000;
+        if (cnt1kHz % 20 == 0) // 割込み50Hz
+        {
+          count_idntm++;
+          GetGyroData(&gyro_z);
+        }
+        if (cnt1kHz % 80 == 0) // 割込み12.5Hz
+        {
+          count_mseq++;
+        }
 
         if (cnt1kHz % 10 == 0)
         { //割込み100Hz
@@ -177,6 +191,7 @@ int main(void)
   GyroInit(); // who_am_i
   setbuf(stdout, NULL);
   IIRInit();
+  MSequenceGen(&m_seq);
   // PIDControlInit(&pid_control);
   GyroOffsetCalc(&gyro_z);
 
