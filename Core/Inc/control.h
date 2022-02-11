@@ -16,7 +16,8 @@
 
 #define VEL_PID_KP  0.166
 #define VEL_PID_KI  0.42
-#define VEL_PID_KD  0.0163
+// #define VEL_PID_KD  0.0163
+#define VEL_PID_KD  0.0
 
 #define MAX_INPUT 1000.0
 
@@ -34,7 +35,8 @@ typedef struct
     float kp1, ki1, kd1, kp2, ki2, kd2;
     float kp3, ki3, kd3;
     float ref, ref2, ref3;
-    int u_ang, u_vel, u_pid_left, u_pid_right;
+    float u_ang, u_vel;
+    int u_pid_left, u_pid_right;
 } Control_Typedef;
 
 typedef struct{

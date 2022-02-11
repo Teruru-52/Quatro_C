@@ -118,7 +118,8 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
           // printf("%d, %d \r\n", encoder_LR.countL, encoder_LR.countR);
           // printf("%ld, %ld, %f \r\n", ir_sensor.ir_fl, ir_sensor.ir_fr, bat_voltage.bat_vol);
           // printf("%ld, %ld, %ld, %ld \r\n", ir_sensor.ir_fl, ir_sensor.ir_fr, ir_sensor.ir_bl, ir_sensor.ir_br);
-          // printf("%d \r\n", pid_control.u_ang);
+          // printf("%d \r\n", pid_control.u_pid_left);
+          // printf("%f, %f \r\n", encoder_LR.velocityL, encoder_LR.velocityR);
         }
       }
     }
@@ -181,11 +182,12 @@ int main(void)
   HAL_TIM_PWM_Start(&htim10, TIM_CHANNEL_1);
   HAL_TIM_PWM_Start(&htim11, TIM_CHANNEL_1);
 
+  ReadFrontIRSensor(&ir_sensor, &bat_voltage);
   GyroInit(); // who_am_i
   setbuf(stdout, NULL);
   IIRInit();
   MSequenceGen(&m_seq);
-  // PIDControlInit(&pid_control);
+  PIDControlInit(&pid_control);
   GyroOffsetCalc(&gyro_z);
 
   int count = 0;

@@ -89,18 +89,6 @@ void GyroInit()
             // printf("gyro_error \r\n");
         }
     }
-    // Speaker
-    __HAL_TIM_SET_COMPARE(&htim2, TIM_CHANNEL_1, 10);
-    HAL_Delay(50);
-    __HAL_TIM_SET_COMPARE(&htim2, TIM_CHANNEL_1, 0);
-
-    // error check
-    if (who_am_i != 0x70)
-    {
-        printf("gyro_error \r\n");
-        // turn off LED
-        HAL_GPIO_WritePin(GPIOC, GPIO_PIN_9, GPIO_PIN_RESET);
-    }
 
     HAL_Delay(50);
     write_byte(PWR_MGMT_1, 0x00); // set pwr_might (20MHz)
@@ -109,6 +97,11 @@ void GyroInit()
     HAL_Delay(50);
     write_byte(GYRO_CONFIG, 0x18); // set gyro config (2000dps)
     HAL_Delay(50);
+
+    // Speaker
+    __HAL_TIM_SET_COMPARE(&htim2, TIM_CHANNEL_1, 10);
+    HAL_Delay(50);
+    __HAL_TIM_SET_COMPARE(&htim2, TIM_CHANNEL_1, 0);
 }
 
 void GyroOffsetCalc(Gyro_Typedef *gyro)
