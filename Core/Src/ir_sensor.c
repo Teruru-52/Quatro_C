@@ -14,7 +14,7 @@ void IRPwmStart()
   __HAL_TIM_SET_COMPARE(&htim11, TIM_CHANNEL_1, 200);
 }
 
-void ReadFrontIRSensor(IR_SENSOR_Typedef *sensor, Battery_Typedef *battery)
+void ReadFrontIRSensor()
 {
   HAL_ADC_Start_DMA(&hadc1, (uint32_t *)dma_f, 3);
 
@@ -37,13 +37,13 @@ void ReadFrontIRSensor(IR_SENSOR_Typedef *sensor, Battery_Typedef *battery)
       max_fr = fr[i];
   }
 
-  sensor->ir_fl = max_fl;
-  sensor->ir_fr = max_fr;
+  ir_fl = max_fl;
+  ir_fr = max_fr;
 
-  battery->bat_vol = (float)dma_f[2] * 3.3 / 4096 * 3;
+  bat_vol = (float)dma_f[2] * 3.3 / 4096 * 3;
 }
 
-void ReadBackIRSensor(IR_SENSOR_Typedef *sensor)
+void ReadBackIRSensor()
 {
   HAL_ADC_Start_DMA(&hadc2, (uint32_t *)dma_b, 2);
 
@@ -66,28 +66,28 @@ void ReadBackIRSensor(IR_SENSOR_Typedef *sensor)
       max_br = br[i];
   }
 
-  sensor->ir_bl = max_bl;
-  sensor->ir_br = max_br;
+  ir_bl = max_bl;
+  ir_br = max_br;
 }
 
-void GetIRSensorData(IR_SENSOR_Typedef *sensor)
+void GetIRSensorData()
 {
-  if (sensor->ir_fl > 2100)
+  if (ir_fl > 2100)
     HAL_GPIO_WritePin(GPIOB, GPIO_PIN_15, GPIO_PIN_SET);
   else
     HAL_GPIO_WritePin(GPIOB, GPIO_PIN_15, GPIO_PIN_RESET);
 
-  if (sensor->ir_fr > 2100)
+  if (ir_fr > 2100)
     HAL_GPIO_WritePin(GPIOB, GPIO_PIN_14, GPIO_PIN_SET);
   else
     HAL_GPIO_WritePin(GPIOB, GPIO_PIN_14, GPIO_PIN_RESET);
 
-  if (sensor->ir_bl > 2100)
+  if (ir_bl > 2100)
     HAL_GPIO_WritePin(GPIOC, GPIO_PIN_7, GPIO_PIN_SET);
   else
     HAL_GPIO_WritePin(GPIOC, GPIO_PIN_7, GPIO_PIN_RESET);
 
-  if (sensor->ir_br > 2100)
+  if (ir_br > 2100)
     HAL_GPIO_WritePin(GPIOB, GPIO_PIN_13, GPIO_PIN_SET);
   else
     HAL_GPIO_WritePin(GPIOB, GPIO_PIN_13, GPIO_PIN_RESET);

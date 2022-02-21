@@ -2,12 +2,9 @@
 #define _BATTERY_H_
 #include "main.h"
 
-typedef struct
-{
-    float bat_vol;
-} Battery_Typedef;
+extern float bat_vol;
 
-void BatteryCheckOn(Battery_Typedef *battery);
+void BatteryCheckOn();
 void BatteryCheckOff();
 
 #endif // _BATTERY_H_

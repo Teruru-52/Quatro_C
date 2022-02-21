@@ -2,7 +2,7 @@
 #include "tim.h"
 #include <stdint.h>
 
-void GetEncoderData(Encoder_Typedef *encoder)
+void GetEncoderData()
 {
   int16_t countl = 0;
   int16_t countr = 0;
@@ -25,10 +25,7 @@ void GetEncoderData(Encoder_Typedef *encoder)
     countr = (int16_t)enc_buff_r;
   }
 
-  encoder->countL = countl;
-  encoder->countR = countr;
-
-  encoder->velocityL = (float)(countl) / 4096.0 * 2.0 * M_PI * 1000.0 * 11.0 / 43.0; // [rad/s]
-  encoder->velocityR = (float)(countr) / 4096.0 * 2.0 * M_PI * 1000.0 * 11.0 / 43.0; // gear ratio 43:11
-  encoder->velocity = (encoder->velocityL + encoder->velocityR) / 2.0;
+  velocityL = (float)(countl) / 4096.0 * 2.0 * M_PI * 1000.0 * 11.0 / 43.0; // [rad/s]
+  velocityR = (float)(countr) / 4096.0 * 2.0 * M_PI * 1000.0 * 11.0 / 43.0; // gear ratio 43:11
+  velocity = (velocityL + velocityR) / 2.0;
 }

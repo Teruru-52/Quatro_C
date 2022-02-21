@@ -21,12 +21,7 @@
 
 #define GYRO_FACTOR       16.4
 
-struct Battery_Typedef;
-
-typedef struct
-{
-  float offset, gz, yaw;
-} Gyro_Typedef;
+float gz, yaw;
 
 typedef struct
 {
@@ -38,7 +33,7 @@ void write_byte(uint8_t reg, uint8_t data);
 
 void IIRInit();
 void GyroInit();
-void GyroOffsetCalc(Gyro_Typedef *gyro);
-void GetGyroData(Gyro_Typedef *gyro);
+void GyroOffsetCalc();
+void GetGyroData();
 
 #endif // _GYRO_H_
