@@ -1,7 +1,7 @@
 #include "flash_memory.h"
 
 const uint32_t start_address = 0x80E0000; // sentor11 start address
-const uint32_t end_adress = 0x80FFFFF;    // sector11 end address
+const uint32_t end_address = 0x80FFFFF;    // sector11 end address
 
 /*
  *@brief erase sector11

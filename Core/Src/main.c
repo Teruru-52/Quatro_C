@@ -38,6 +38,8 @@ Encoder_Typedef encoder_LR;
 IR_SENSOR_Typedef ir_sensor;
 Control_Typedef pid_control;
 extern Battery_Typedef bat_voltage;
+Data_Typedef data_iden;
+MSequence_Typedef m_seq;
 /* USER CODE END PTD */
 
 /* Private define ------------------------------------------------------------*/
@@ -65,9 +67,13 @@ void SystemClock_Config(void);
 /* USER CODE BEGIN 0 */
 bool flag_mode = false;
 extern bool flag_offset;
+int count_idnt = 0;
+int count_idntm = 0;
+int count_mseq = 0; // 12.5Hz
 int cnt16kHz = 0;
 int cnt1kHz = 0;
 int cnt100Hz = 0;
+int cnt50Hz = 0; // 20ms
 void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 {
   if (htim == &htim1) //割込み16kHz
@@ -75,24 +81,29 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
     if (flag_offset == true)
     {
       ReadFrontIRSensor(&ir_sensor, &bat_voltage);
-      ReadBackIRSensor(&ir_sensor);
       cnt16kHz = (cnt16kHz + 1) % 16;
       if (cnt16kHz == 0) //割込み1kHz
       {
-        GetIRSensorData(&ir_sensor);
-        GetGyroData(&gyro_z);
-        // GetEncoderData(&encoder_LR);
+        if (count_idnt >= 2000)
+        { // count_idnt 3秒で停止  // count_identm 2.54秒で停止
+          flag_offset = false;
+          MotorStop();
+        }
+        else
+        {
+          GetGyroData(&gyro_z);
+          // RotationControl(&bat_voltage, &data_iden, &gyro_z);
+          GetEncoderData(&encoder_LR);
+          AngleControl(&gyro_z, &pid_control);
+          AngularVelocityControl(&gyro_z, &pid_control);
+          VelocityControl(&encoder_LR, &pid_control);
+          PIDControl(&pid_control, &bat_voltage);
+        }
+        count_idnt++;
         cnt1kHz = (cnt1kHz + 1) % 1000;
-
         if (cnt1kHz % 10 == 0)
         { //割込み100Hz
           cnt100Hz = (cnt100Hz + 1) % 100;
-          // if(flag_mode == true){
-          //   GetEncoderData(&encoder_LR);
-          // }
-          // AngleControl(&gyro_z, &pid_control);
-          // AngularVelocityControl(&gyro_z, &pid_control);
-          // PIDControl(&pid_control);
         }
         if (cnt100Hz == 0)
           HAL_GPIO_WritePin(GPIOC, GPIO_PIN_8, GPIO_PIN_SET);
@@ -106,8 +117,9 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
           // printf("%f, %f, %d \r\n", gyro_z.yaw, bat_voltage.bat_vol, pid_control.u_ang);
           // printf("%d, %d \r\n", encoder_LR.countL, encoder_LR.countR);
           // printf("%ld, %ld, %f \r\n", ir_sensor.ir_fl, ir_sensor.ir_fr, bat_voltage.bat_vol);
-          printf("%ld, %ld, %ld, %ld \r\n", ir_sensor.ir_fl, ir_sensor.ir_fr, ir_sensor.ir_bl, ir_sensor.ir_br);
-          // printf("%d \r\n", pid_control.u_ang);
+          // printf("%ld, %ld, %ld, %ld \r\n", ir_sensor.ir_fl, ir_sensor.ir_fr, ir_sensor.ir_bl, ir_sensor.ir_br);
+          // printf("%d \r\n", pid_control.u_pid_left);
+          // printf("%f, %f \r\n", encoder_LR.velocityL, encoder_LR.velocityR);
         }
       }
     }
@@ -170,13 +182,13 @@ int main(void)
   HAL_TIM_PWM_Start(&htim10, TIM_CHANNEL_1);
   HAL_TIM_PWM_Start(&htim11, TIM_CHANNEL_1);
 
+  ReadFrontIRSensor(&ir_sensor, &bat_voltage);
   GyroInit(); // who_am_i
   setbuf(stdout, NULL);
   IIRInit();
+  MSequenceGen(&m_seq);
   PIDControlInit(&pid_control);
-  IRPwmStart();
   GyroOffsetCalc(&gyro_z);
-
 
   int count = 0;
   int SW_read = 0;
@@ -198,6 +210,15 @@ int main(void)
     // Select Mode
     if (HAL_GPIO_ReadPin(GPIOB, GPIO_PIN_2) == 0)
     {
+      for (int i = 0; i < 2000; i++)
+      {
+        printf("%d \r\n", data_iden.input[i]);
+      }
+      for (int i = 0; i < 2000; i++)
+      {
+        printf("%f \r\n", data_iden.output[i]);
+      }
+
       count++;
       if (count > 200)
       {
