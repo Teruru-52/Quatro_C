@@ -1,7 +1,6 @@
 #include "gyro.h"
 
 bool flag_offset = false;
-bool flag_gyro = false;
 
 static float gz_offset;
 static float gz_y_pre[4], gz_x_pre[4];
@@ -137,7 +136,7 @@ void GetGyroData()
     // H:8bit shift, Link h and l
     gz_raw = (int16_t)((uint16_t)(read_byte(GYRO_ZOUT_H) << 8) | (uint16_t)read_byte(GYRO_ZOUT_L));
     // printf("%d\r\n", gz_raw);
-    gz = (float)(gz_raw / GYRO_FACTOR) - offset; // dps to deg/sec
+    gz = (float)(gz_raw / GYRO_FACTOR) - gz_offset; // dps to deg/sec
 
     float filtered_gyro_z = gyro_fil_coeff.b0*gz + gyro_fil_coeff.b1*gz_x_pre[0] + gyro_fil_coeff.b2*gz_x_pre[1]
                                                     + gyro_fil_coeff.a1*gz_y_pre[0] + gyro_fil_coeff.a2*gz_y_pre[1];

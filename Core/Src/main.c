@@ -64,6 +64,12 @@ int cnt = 0;
 int cnt16kHz = 0;
 int cnt1kHz = 0;
 // int cnt100Hz = 0;
+
+extern float yaw, gz;
+extern uint32_t ir_fl, ir_fr, ir_bl, ir_br;
+extern float bat_vol;
+extern float velocityL, velocityR, velocity;
+
 void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 {
   if (htim == &htim1) //割込み16kHz
@@ -99,8 +105,7 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 
         if (cnt1kHz % 200 == 0)
         {
-          // printf("%f \r\n", yaw);
-          // printf("%d, %d \r\n", countL, countR);
+          // printf("%f, %f \r\n", yaw, gz);
           // printf("%ld, %ld, %f \r\n", ir_fl, ir_fr);
           // printf("%ld, %ld, %ld, %ld \r\n", ir_fl, ir_fr, ir_bl, ir_br);
           // printf("%f, %f \r\n", velocityL, velocityR);
