@@ -107,16 +107,16 @@ void GyroInit()
 void GyroOffsetCalc()
 {
     int16_t gz_raw;
-    float gz;
+    float gz_nonfil;
     float gz_sum = 0;
     for (int i = 0; i < 1000; i++)
     {
         // H:8bit shift, Link h and l
         gz_raw = (int16_t)((uint16_t)(read_byte(GYRO_ZOUT_H) << 8) | (uint16_t)read_byte(GYRO_ZOUT_L));
         // printf("%d\r\n", gz_raw);
-        gz = (float)(gz_raw / GYRO_FACTOR); // dps to deg/sec
+        gz_nonfil = (float)(gz_raw / GYRO_FACTOR); // dps to deg/sec
 
-        gz_sum += gz;
+        gz_sum += gz_nonfil;
         HAL_Delay(1);
     }
     gz_offset = gz_sum / 1000.0;
@@ -134,14 +134,14 @@ void GyroOffsetCalc()
 void GetGyroData()
 {
     int16_t gz_raw;
-    float gz;
+    float gz_nonfil;
 
     // H:8bit shift, Link h and l
     gz_raw = (int16_t)((uint16_t)(read_byte(GYRO_ZOUT_H) << 8) | (uint16_t)read_byte(GYRO_ZOUT_L));
     // printf("%d\r\n", gz_raw);
-    gz = (float)(gz_raw / GYRO_FACTOR) - gz_offset; // dps to deg/sec
+    gz_nonfil = (float)(gz_raw / GYRO_FACTOR) - gz_offset; // dps to deg/sec
 
-    float filtered_gyro_z = gyro_fil_coeff.b0 * gz + gyro_fil_coeff.b1 * gz_x_pre[0] + gyro_fil_coeff.b2 * gz_x_pre[1] + gyro_fil_coeff.a1 * gz_y_pre[0] + gyro_fil_coeff.a2 * gz_y_pre[1];
+    float filtered_gyro_z = gyro_fil_coeff.b0 * gz_nonfil + gyro_fil_coeff.b1 * gz_x_pre[0] + gyro_fil_coeff.b2 * gz_x_pre[1] + gyro_fil_coeff.a1 * gz_y_pre[0] + gyro_fil_coeff.a2 * gz_y_pre[1];
 
     // Shift IIR filter state
     for (int i = 1; i > 0; i--)
@@ -149,9 +149,10 @@ void GetGyroData()
         gz_x_pre[i] = gz_x_pre[i - 1];
         gz_y_pre[i] = gz_y_pre[i - 1];
     }
-    gz_x_pre[0] = gz;
+    gz_x_pre[0] = gz_nonfil;
     gz_y_pre[0] = filtered_gyro_z;
 
     gz = filtered_gyro_z; // IIR filter
+    // gz = gz_nonfil; // no filter
     yaw += gz * 0.001;
 }
