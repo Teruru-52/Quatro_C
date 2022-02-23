@@ -34,15 +34,15 @@ void PIDControlInit(Control_Typedef *pid1, Control_Typedef *pid2, Control_Typede
 
 float AngleControl(Control_Typedef *pid1)
 {
-  float error, deriv, u;
+  float error, deriv, vel_ref;
   error = (pid1->ref - yaw) * M_PI / 180;
   sum_error += error * CONTROL_PERIOD;
   deriv = (pre_error - error) / CONTROL_PERIOD;
-  u = pid1->kp * error + pid1->ki * sum_error + pid1->kd * deriv;
+  vel_ref = pid1->kp * error + pid1->ki * sum_error + pid1->kd * deriv;
 
   pre_error = error;
 
-  return u;
+  return vel_ref;
 }
 
 float AngularVelocityControl(Control_Typedef *pid2)

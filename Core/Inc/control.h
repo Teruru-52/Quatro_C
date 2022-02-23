@@ -1,9 +1,6 @@
 #ifndef _CONTROL_H_
 #define _CONTROL_H_
 #include "main.h"
-#include "gyro.h"
-#include "encoder.h"
-#include "ir_sensor.h"
 
 #define YAW_PID_KP 30
 #define YAW_PID_KI 10

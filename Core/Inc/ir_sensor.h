@@ -4,10 +4,6 @@
 
 #define SAMPLING_COUNT 16
 
-uint32_t ir_fl, ir_fr, ir_bl, ir_br;
-
-float bat_vol;
-
 void IRPwmStart();
 void ReadFrontIRSensor();
 void ReadBackIRSensor();

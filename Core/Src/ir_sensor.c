@@ -8,6 +8,9 @@ static uint32_t fr[SAMPLING_COUNT];
 static uint32_t bl[SAMPLING_COUNT];
 static uint32_t br[SAMPLING_COUNT];
 
+uint32_t ir_fl, ir_fr, ir_bl, ir_br;
+float bat_vol;
+
 void IRPwmStart()
 {
   __HAL_TIM_SET_COMPARE(&htim10, TIM_CHANNEL_1, 200);

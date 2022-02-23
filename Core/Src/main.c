@@ -80,13 +80,14 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
       cnt16kHz = (cnt16kHz + 1) % 16;
       if (cnt16kHz == 0) //割込み1kHz
       {
-        if (cnt >= 2000)
-        { // cnt 2秒で停止
+        if (cnt >= 112000) // cnt 112秒で停止
+        {
           flag_offset = false;
           MotorStop();
         }
         else
         {
+          GetIRSensorData();
           GetGyroData();
           GetEncoderData();
           PartyTrick();
@@ -105,7 +106,7 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 
         if (cnt1kHz % 200 == 0)
         {
-          // printf("%f, %f \r\n", yaw, gz);
+          printf("%f, %f \r\n", yaw, gz);
           // printf("%ld, %ld, %f \r\n", ir_fl, ir_fr);
           // printf("%ld, %ld, %ld, %ld \r\n", ir_fl, ir_fr, ir_bl, ir_br);
           // printf("%f, %f \r\n", velocityL, velocityR);

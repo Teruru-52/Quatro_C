@@ -21,8 +21,6 @@
 
 #define GYRO_FACTOR       16.4
 
-float gz, yaw;
-
 typedef struct
 {
   float a1, a2, b0, b1, b2;

@@ -2,6 +2,8 @@
 #include "tim.h"
 #include <stdint.h>
 
+float velocityL, velocityR, velocity;
+
 void GetEncoderData()
 {
   int16_t countl = 0;
