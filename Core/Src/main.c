@@ -80,7 +80,7 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
       cnt16kHz = (cnt16kHz + 1) % 16;
       if (cnt16kHz == 0) //割込み1kHz
       {
-        if (cnt >= 2000) // cnt 2秒で停止
+        if (cnt >= 112000) // cnt 112秒で停止
         {
           flag_offset = false;
           MotorStop();
@@ -90,8 +90,8 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
           GetIRSensorData();
           GetGyroData();
           GetEncoderData();
-          // PartyTrick();
-          GoStraight();
+          PartyTrick();
+          // GoStraight();
         }
         cnt++;
         cnt1kHz = (cnt1kHz + 1) % 1000;
@@ -173,8 +173,8 @@ int main(void)
   HAL_TIM_PWM_Start(&htim11, TIM_CHANNEL_1);
 
   ReadFrontIRSensor();
-  GyroInit(); // who_am_i
   setbuf(stdout, NULL);
+  GyroInit(); // who_am_i
   IIRInit();
   PIDControlInit(&pid_1, &pid_2, &pid_3);
   GyroOffsetCalc();

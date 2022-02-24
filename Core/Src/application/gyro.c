@@ -66,6 +66,7 @@ void GyroInit()
     // turn on LED
     HAL_GPIO_WritePin(GPIOC, GPIO_PIN_9, GPIO_PIN_SET);
     BatteryCheckOn();
+    setbuf(stdout, NULL);
 
     uint8_t who_am_i;
 
