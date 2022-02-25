@@ -63,7 +63,7 @@ Core/Src/dma.c \
 Core/Src/spi.c \
 Core/Src/tim.c \
 Core/Src/usart.c \
-$(wildcard Core/Src/application/*.c)
+$(wildcard Core/Src/Application/*.c)
 
 # CPP sources
 CPP_SOURCES = \

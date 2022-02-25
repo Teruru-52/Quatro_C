@@ -90,8 +90,9 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
           GetIRSensorData();
           GetGyroData();
           GetEncoderData();
-          PartyTrick();
-          // GoStraight();
+          // PartyTrick();
+          GoStraight();
+          DetectFrontWall();
         }
         cnt++;
         cnt1kHz = (cnt1kHz + 1) % 1000;

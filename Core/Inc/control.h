@@ -1,6 +1,7 @@
 #ifndef _CONTROL_H_
 #define _CONTROL_H_
 #include "main.h"
+#include "ir_sensor.h"
 
 #define YAW_PID_KP 30
 #define YAW_PID_KI 10
@@ -20,6 +21,8 @@
 #define CONTROL_PERIOD 0.001f
 #define D_FILTER_COFF 0.025f // 3.98Hz
 
+extern uint32_t ir_fl, ir_fr, ir_bl, ir_br;
+
 typedef struct
 {
     float kp, ki, kd;
@@ -34,8 +37,10 @@ void PIDControlInit(Control_Typedef *pid1, Control_Typedef *pid2, Control_Typede
 float AngleControl(Control_Typedef *pid1);
 float AngularVelocityControl(Control_Typedef *pid2);
 float VelocityControl(Control_Typedef *pid3);
+void SetReference(Control_Typedef *pid1, float ref_ang);
 void PartyTrick();
 void GoStraight();
+void DetectFrontWall();
 void MotorStop();
 
 #endif // _CONTROL_H_

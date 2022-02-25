@@ -32,6 +32,11 @@ void PIDControlInit(Control_Typedef *pid1, Control_Typedef *pid2, Control_Typede
   pid3->ref = 100.0; // [rad/s]
 }
 
+void SetReference(Control_Typedef *pid1, float ref_ang)
+{
+  pid1->ref = ref_ang;
+}
+
 float AngleControl(Control_Typedef *pid1)
 {
   float error, deriv, vel_ref;
@@ -76,7 +81,8 @@ float VelocityControl(Control_Typedef *pid3)
   return u_vel;
 }
 
-void PartyTrick(){
+void PartyTrick()
+{
   float u, u_ang;
   u = AngularVelocityControl(&pid_2);
 
@@ -94,7 +100,8 @@ void PartyTrick(){
     __HAL_TIM_SET_COMPARE(&htim5, TIM_CHANNEL_3, MAX_INPUT);
     __HAL_TIM_SET_COMPARE(&htim5, TIM_CHANNEL_4, MAX_INPUT - u_ang);
   }
-  else{
+  else
+  {
     __HAL_TIM_SET_COMPARE(&htim5, TIM_CHANNEL_1, MAX_INPUT + u_ang);
     __HAL_TIM_SET_COMPARE(&htim5, TIM_CHANNEL_2, MAX_INPUT);
     __HAL_TIM_SET_COMPARE(&htim5, TIM_CHANNEL_3, MAX_INPUT + u_ang);
@@ -115,16 +122,23 @@ void GoStraight()
     u_left = MAX_INPUT;
   else if (u_left <= -MAX_INPUT)
     u_left = -MAX_INPUT;
-    
+
   if (u_right >= MAX_INPUT)
     u_right = MAX_INPUT;
   else if (u_right <= -MAX_INPUT)
     u_right = -MAX_INPUT;
 
-    __HAL_TIM_SET_COMPARE(&htim5, TIM_CHANNEL_1, MAX_INPUT - u_left);
-    __HAL_TIM_SET_COMPARE(&htim5, TIM_CHANNEL_2, MAX_INPUT);
-    __HAL_TIM_SET_COMPARE(&htim5, TIM_CHANNEL_3, MAX_INPUT);
-    __HAL_TIM_SET_COMPARE(&htim5, TIM_CHANNEL_4, MAX_INPUT - u_right);
+  __HAL_TIM_SET_COMPARE(&htim5, TIM_CHANNEL_1, MAX_INPUT - u_left);
+  __HAL_TIM_SET_COMPARE(&htim5, TIM_CHANNEL_2, MAX_INPUT);
+  __HAL_TIM_SET_COMPARE(&htim5, TIM_CHANNEL_3, MAX_INPUT);
+  __HAL_TIM_SET_COMPARE(&htim5, TIM_CHANNEL_4, MAX_INPUT - u_right);
+}
+
+void DetectFrontWall()
+{
+  if(ir_bl > 2500 && ir_br > 2500){
+    MotorStop();
+  }
 }
 
 void MotorStop()
