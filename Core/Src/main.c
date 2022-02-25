@@ -33,13 +33,7 @@
 
 /* Private typedef -----------------------------------------------------------*/
 /* USER CODE BEGIN PTD */
-Gyro_Typedef gyro_z;
-Encoder_Typedef encoder_LR;
-IR_SENSOR_Typedef ir_sensor;
-Control_Typedef pid_control;
-extern Battery_Typedef bat_voltage;
-Data_Typedef data_iden;
-MSequence_Typedef m_seq;
+extern Control_Typedef pid_1, pid_2, pid_3;
 /* USER CODE END PTD */
 
 /* Private define ------------------------------------------------------------*/
@@ -65,61 +59,58 @@ void SystemClock_Config(void);
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
-bool flag_mode = false;
 extern bool flag_offset;
-int count_idnt = 0;
-int count_idntm = 0;
-int count_mseq = 0; // 12.5Hz
+int cnt = 0;
 int cnt16kHz = 0;
 int cnt1kHz = 0;
-int cnt100Hz = 0;
-int cnt50Hz = 0; // 20ms
+// int cnt100Hz = 0;
+
+extern float yaw, gz;
+extern uint32_t ir_fl, ir_fr, ir_bl, ir_br;
+extern float bat_vol;
+extern float velocityL, velocityR, velocity;
+
 void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 {
   if (htim == &htim1) //割込み16kHz
   {
     if (flag_offset == true)
     {
-      ReadFrontIRSensor(&ir_sensor, &bat_voltage);
+      ReadFrontIRSensor();
       cnt16kHz = (cnt16kHz + 1) % 16;
       if (cnt16kHz == 0) //割込み1kHz
       {
-        if (count_idnt >= 2000)
-        { // count_idnt 3秒で停止  // count_identm 2.54秒で停止
+        if (cnt >= 112000) // cnt 112秒で停止
+        {
           flag_offset = false;
           MotorStop();
         }
         else
         {
-          GetGyroData(&gyro_z);
-          // RotationControl(&bat_voltage, &data_iden, &gyro_z);
-          GetEncoderData(&encoder_LR);
-          AngleControl(&gyro_z, &pid_control);
-          AngularVelocityControl(&gyro_z, &pid_control);
-          VelocityControl(&encoder_LR, &pid_control);
-          PIDControl(&pid_control, &bat_voltage);
+          GetIRSensorData();
+          GetGyroData();
+          GetEncoderData();
+          // PartyTrick();
+          GoStraight();
+          DetectFrontWall();
         }
-        count_idnt++;
+        cnt++;
         cnt1kHz = (cnt1kHz + 1) % 1000;
-        if (cnt1kHz % 10 == 0)
-        { //割込み100Hz
-          cnt100Hz = (cnt100Hz + 1) % 100;
-        }
-        if (cnt100Hz == 0)
+        // if (cnt1kHz % 10 == 0)
+        // { //割込み100Hz
+        //   cnt100Hz = (cnt100Hz + 1) % 100;
+        // }
+        if (cnt1kHz == 0)
           HAL_GPIO_WritePin(GPIOC, GPIO_PIN_8, GPIO_PIN_SET);
         else
           HAL_GPIO_WritePin(GPIOC, GPIO_PIN_8, GPIO_PIN_RESET);
 
         if (cnt1kHz % 200 == 0)
         {
-          // printf("%f \r\n", gyro_z.yaw);
-          // printf("%f, %f \r\n", gyro_z.gz, pid_control.ref2);
-          // printf("%f, %f, %d \r\n", gyro_z.yaw, bat_voltage.bat_vol, pid_control.u_ang);
-          // printf("%d, %d \r\n", encoder_LR.countL, encoder_LR.countR);
-          // printf("%ld, %ld, %f \r\n", ir_sensor.ir_fl, ir_sensor.ir_fr, bat_voltage.bat_vol);
-          // printf("%ld, %ld, %ld, %ld \r\n", ir_sensor.ir_fl, ir_sensor.ir_fr, ir_sensor.ir_bl, ir_sensor.ir_br);
-          // printf("%d \r\n", pid_control.u_pid_left);
-          // printf("%f, %f \r\n", encoder_LR.velocityL, encoder_LR.velocityR);
+          printf("%f, %f \r\n", yaw, gz);
+          // printf("%ld, %ld, %f \r\n", ir_fl, ir_fr);
+          // printf("%ld, %ld, %ld, %ld \r\n", ir_fl, ir_fr, ir_bl, ir_br);
+          // printf("%f, %f \r\n", velocityL, velocityR);
         }
       }
     }
@@ -182,13 +173,12 @@ int main(void)
   HAL_TIM_PWM_Start(&htim10, TIM_CHANNEL_1);
   HAL_TIM_PWM_Start(&htim11, TIM_CHANNEL_1);
 
-  ReadFrontIRSensor(&ir_sensor, &bat_voltage);
-  GyroInit(); // who_am_i
+  ReadFrontIRSensor();
   setbuf(stdout, NULL);
+  GyroInit(); // who_am_i
   IIRInit();
-  MSequenceGen(&m_seq);
-  PIDControlInit(&pid_control);
-  GyroOffsetCalc(&gyro_z);
+  PIDControlInit(&pid_1, &pid_2, &pid_3);
+  GyroOffsetCalc();
 
   int count = 0;
   int SW_read = 0;
@@ -202,23 +192,9 @@ int main(void)
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
-    // __HAL_TIM_SET_COMPARE(&htim5, TIM_CHANNEL_1, 0);
-    // __HAL_TIM_SET_COMPARE(&htim5, TIM_CHANNEL_2, 300);
-    // __HAL_TIM_SET_COMPARE(&htim5, TIM_CHANNEL_3, 0);
-    // __HAL_TIM_SET_COMPARE(&htim5, TIM_CHANNEL_4, 400);
-
     // Select Mode
     if (HAL_GPIO_ReadPin(GPIOB, GPIO_PIN_2) == 0)
     {
-      for (int i = 0; i < 2000; i++)
-      {
-        printf("%d \r\n", data_iden.input[i]);
-      }
-      for (int i = 0; i < 2000; i++)
-      {
-        printf("%f \r\n", data_iden.output[i]);
-      }
-
       count++;
       if (count > 200)
       {
@@ -240,12 +216,6 @@ int main(void)
     {
       // HAL_GPIO_WritePin(GPIOC, GPIO_PIN_8, GPIO_PIN_SET);
       HAL_GPIO_WritePin(GPIOC, GPIO_PIN_9, GPIO_PIN_SET);
-      // if(&ir_sensor.ir_fl > 2100 && &ir_sensor.ir_fr > 2100){
-      //   flag_mode = true;
-      //   __HAL_TIM_SET_COMPARE(&htim2, TIM_CHANNEL_1, 10);
-      //   HAL_Delay(50);
-      //   __HAL_TIM_SET_COMPARE(&htim2, TIM_CHANNEL_1, 0);
-      // }
     }
     // else if (SW_read == 2)
     // {

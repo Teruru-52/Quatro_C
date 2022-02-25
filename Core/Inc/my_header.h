@@ -9,4 +9,4 @@
 #include "flash_memory.h"
 #include "battery.h"
 
-#endif
+#endif // _MY_HEADER_H_

@@ -63,17 +63,11 @@ Core/Src/dma.c \
 Core/Src/spi.c \
 Core/Src/tim.c \
 Core/Src/usart.c \
-Core/Src/control.c \
-Core/Src/encoder.c \
-Core/Src/gyro.c \
-Core/Src/ir_sensor.c \
-Core/Src/fan_motor.c \
-Core/Src/flash_memory.c \
-Core/Src/battery.c
+$(wildcard Core/Src/Application/*.c)
 
-# Wildcard
-# C_SOURCES := $(wildcard Core/Src/*.c) \
-# 			 $(wildcard Drivers/STM32F4xx_HAL_Driver/Src/*.c)
+# CPP sources
+CPP_SOURCES = \
+$(wildcard Core/Src/*.cpp)
 
 # ASM sources
 ASM_SOURCES =  \
