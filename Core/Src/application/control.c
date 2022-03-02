@@ -9,6 +9,9 @@ static float pre_error3;
 static float sum_error3 = 0.0;
 static float pre_deriv3;
 
+static const float radious = 0.012;
+static float pos = 0.0;
+
 Control_Typedef pid_1, pid_2, pid_3;
 
 // static float dt_recip;  // 1/sampling time
@@ -19,7 +22,7 @@ void PIDControlInit(Control_Typedef *pid1, Control_Typedef *pid2, Control_Typede
   pid1->kp = YAW_PID_KP;
   pid1->ki = YAW_PID_KI;
   pid1->kd = YAW_PID_KD;
-  pid1->ref = 0.0;
+  pid1->ref = 90.0;
   // Angular Velocity Control
   pid2->kp = GYRO_PID_KP;
   pid2->ki = GYRO_PID_KI;
@@ -30,10 +33,19 @@ void PIDControlInit(Control_Typedef *pid1, Control_Typedef *pid2, Control_Typede
   pid3->ki = VEL_PID_KI;
   pid3->kd = VEL_PID_KD;
   pid3->ref = 100.0; // [rad/s]
+
+  yaw = 0;
+  pre_error = 0.0;
+  sum_error = 0.0;
+  pre_error2 = 0.0;
+  sum_error2 = 0.0;
+  pre_error3 = 0.0;
+  sum_error3 = 0.0;
 }
 
 void SetReference(Control_Typedef *pid1, float ref_ang)
 {
+  PIDControlInit(&pid_1, &pid_2, &pid_3);
   pid1->ref = ref_ang;
 }
 
@@ -79,6 +91,14 @@ float VelocityControl(Control_Typedef *pid3)
   pre_deriv3 = deriv3;
 
   return u_vel;
+}
+
+void PositionControl(){
+  pos += velocity * radious * CONTROL_PERIOD;
+  if(pos > 0.15) { // pos > 15[cm]
+    MotorStop();
+    flag_offset = false;
+  }
 }
 
 void PartyTrick()
@@ -136,15 +156,88 @@ void GoStraight()
 
 void DetectFrontWall()
 {
-  if(ir_bl > 2500 && ir_br > 2500){
+  if (ir_bl > 2400 && ir_br > 2400)
+  {
+    MotorStop();
+    HAL_Delay(500);
+    SetReference(&pid_1, 90.0);
+    cnt_turn = 0;
+    flag_turn = 1;
+  }
+}
+
+void FrontWallCorrection(){
+  int u_left = IR_KP_LEFT * (IR_THR_LEFT - (int)ir_bl);
+  int u_right = IR_KP_RIGHT * (IR_THR_RIGHT - (int)ir_br);
+
+  if (u_left > 0){
+    __HAL_TIM_SET_COMPARE(&htim5, TIM_CHANNEL_1, MAX_INPUT - u_left);
+    __HAL_TIM_SET_COMPARE(&htim5, TIM_CHANNEL_2, MAX_INPUT);
+  }
+  else{ 
+    __HAL_TIM_SET_COMPARE(&htim5, TIM_CHANNEL_1, MAX_INPUT);
+    __HAL_TIM_SET_COMPARE(&htim5, TIM_CHANNEL_2, MAX_INPUT + u_left);
+  }
+
+  if (u_right > 0) {
+    __HAL_TIM_SET_COMPARE(&htim5, TIM_CHANNEL_3, MAX_INPUT);
+    __HAL_TIM_SET_COMPARE(&htim5, TIM_CHANNEL_4, MAX_INPUT - u_right);
+  }
+  else{
+    __HAL_TIM_SET_COMPARE(&htim5, TIM_CHANNEL_3, MAX_INPUT + u_right);
+    __HAL_TIM_SET_COMPARE(&htim5, TIM_CHANNEL_4, MAX_INPUT);
+  }
+
+  if (u_left >= 300 || u_left <= -300){
+    flag_sensor = 2;
+    MotorStop();
+  }
+
+  if (u_right >= 300 || u_right <= -300){
+    flag_sensor = 2;
     MotorStop();
   }
 }
 
+void Turn()
+{
+  float u, u_ang;
+  u = AngularVelocityControl(&pid_2);
+
+  u_ang = (int)(1000.0 / bat_vol * u);
+
+  if (u_ang >= MAX_INPUT)
+    u_ang = MAX_INPUT;
+  if (u_ang <= -MAX_INPUT)
+    u_ang = -MAX_INPUT;
+
+  if (u_ang > 0)
+  {
+    __HAL_TIM_SET_COMPARE(&htim5, TIM_CHANNEL_1, MAX_INPUT);
+    __HAL_TIM_SET_COMPARE(&htim5, TIM_CHANNEL_2, MAX_INPUT - u_ang);
+    __HAL_TIM_SET_COMPARE(&htim5, TIM_CHANNEL_3, MAX_INPUT);
+    __HAL_TIM_SET_COMPARE(&htim5, TIM_CHANNEL_4, MAX_INPUT - u_ang);
+  }
+  else
+  {
+    __HAL_TIM_SET_COMPARE(&htim5, TIM_CHANNEL_1, MAX_INPUT + u_ang);
+    __HAL_TIM_SET_COMPARE(&htim5, TIM_CHANNEL_2, MAX_INPUT);
+    __HAL_TIM_SET_COMPARE(&htim5, TIM_CHANNEL_3, MAX_INPUT + u_ang);
+    __HAL_TIM_SET_COMPARE(&htim5, TIM_CHANNEL_4, MAX_INPUT);
+  }
+}
+
+void Back(){
+  __HAL_TIM_SET_COMPARE(&htim5, TIM_CHANNEL_1, MAX_INPUT);
+  __HAL_TIM_SET_COMPARE(&htim5, TIM_CHANNEL_2, MAX_INPUT - 50);
+  __HAL_TIM_SET_COMPARE(&htim5, TIM_CHANNEL_3, MAX_INPUT - 50);
+  __HAL_TIM_SET_COMPARE(&htim5, TIM_CHANNEL_4, MAX_INPUT);
+}
+
 void MotorStop()
 {
-  __HAL_TIM_SET_COMPARE(&htim5, TIM_CHANNEL_1, 0);
-  __HAL_TIM_SET_COMPARE(&htim5, TIM_CHANNEL_2, 0);
-  __HAL_TIM_SET_COMPARE(&htim5, TIM_CHANNEL_3, 0);
-  __HAL_TIM_SET_COMPARE(&htim5, TIM_CHANNEL_4, 0);
+  __HAL_TIM_SET_COMPARE(&htim5, TIM_CHANNEL_1, MAX_INPUT);
+  __HAL_TIM_SET_COMPARE(&htim5, TIM_CHANNEL_2, MAX_INPUT);
+  __HAL_TIM_SET_COMPARE(&htim5, TIM_CHANNEL_3, MAX_INPUT);
+  __HAL_TIM_SET_COMPARE(&htim5, TIM_CHANNEL_4, MAX_INPUT);
 }

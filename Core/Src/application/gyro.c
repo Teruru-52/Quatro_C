@@ -5,7 +5,7 @@ bool flag_gyro = false;
 
 static float gz_offset;
 static float gz_y_pre[4], gz_x_pre[4];
-float gz, yaw;
+float gz, yaw = 0;
 
 // IIR filter
 // 7hz, 800hz
@@ -85,7 +85,7 @@ void GyroInit()
         // error check
         else
         {
-            // printf("who_am_i = 0x%x\r\n", who_am_i);
+            printf("who_am_i = 0x%x\r\n", who_am_i);
             HAL_Delay(10);
             // printf("gyro_error \r\n");
         }
@@ -155,5 +155,5 @@ void GetGyroData()
 
     gz = filtered_gyro_z; // IIR filter
     // gz = gz_nonfil; // no filter
-    yaw += gz * 0.001;
+    yaw += gz * 0.01;
 }
