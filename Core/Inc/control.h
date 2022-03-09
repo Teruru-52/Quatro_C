@@ -2,8 +2,8 @@
 #define _CONTROL_H_
 #include "main.h"
 
-#define YAW_PID_KP 250
-#define YAW_PID_KI 250
+#define YAW_PID_KP 20
+#define YAW_PID_KI 20
 #define YAW_PID_KD 5.0
 
 #define GYRO_PID_KP 0.639
@@ -21,7 +21,9 @@
 #define D_FILTER_COFF 0.025f // 3.98Hz
 
 #define IR_KP_LEFT 0.5
+#define IR_KI_LEFT 0.1
 #define IR_KP_RIGHT 0.5
+#define IR_KI_RIGHT 0.1
 #define IR_THR_LEFT 3300
 #define IR_THR_RIGHT 3000
 
@@ -30,10 +32,8 @@ extern float yaw, gz;
 extern float velocity;
 extern float velocityR;
 extern float bat_vol;
-extern bool flag_offset;
 extern int flag_turn;
 extern int flag_sensor;
-extern int cnt_turn;
 
 typedef struct
 {

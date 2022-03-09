@@ -7,6 +7,6 @@
 void IRPwmStart();
 void ReadFrontIRSensor();
 void ReadBackIRSensor();
-void GetIRSensorData();
+void UpdateIRSensorData();
 
 #endif // _IR_SENSOR_H_

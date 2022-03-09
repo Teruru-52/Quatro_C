@@ -22,7 +22,7 @@ void PIDControlInit(Control_Typedef *pid1, Control_Typedef *pid2, Control_Typede
   pid1->kp = YAW_PID_KP;
   pid1->ki = YAW_PID_KI;
   pid1->kd = YAW_PID_KD;
-  pid1->ref = 90.0;
+  pid1->ref = 0.0;
   // Angular Velocity Control
   pid2->kp = GYRO_PID_KP;
   pid2->ki = GYRO_PID_KI;
@@ -97,7 +97,7 @@ void PositionControl(){
   pos += velocity * radious * CONTROL_PERIOD;
   if(pos > 0.15) { // pos > 15[cm]
     MotorStop();
-    flag_offset = false;
+    flag_sensor = 2;
   }
 }
 
@@ -161,12 +161,12 @@ void DetectFrontWall()
     MotorStop();
     HAL_Delay(500);
     SetReference(&pid_1, 90.0);
-    cnt_turn = 0;
     flag_turn = 1;
   }
 }
 
 void FrontWallCorrection(){
+  int error_l, error_r;
   int u_left = IR_KP_LEFT * (IR_THR_LEFT - (int)ir_bl);
   int u_right = IR_KP_RIGHT * (IR_THR_RIGHT - (int)ir_br);
 

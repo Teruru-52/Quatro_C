@@ -28,7 +28,7 @@ void GetEncoderData()
     countr = (int16_t)enc_buff_r;
   }
 
-  velocityL = (float)(countl) / 4096.0 * 2.0 * M_PI * 1000.0 * gear_ratio; // [rad/s]
-  velocityR = (float)(countr) / 4096.0 * 2.0 * M_PI * 1000.0 * gear_ratio; // gear ratio 43:11
+  velocityL = (float)(countl) / 4096.0 * 2.0 * M_PI * 100.0 * gear_ratio; // [rad/s]
+  velocityR = (float)(countr) / 4096.0 * 2.0 * M_PI * 100.0 * gear_ratio; // gear ratio 43:11
   velocity = (velocityL + velocityR) / 2.0;
 }

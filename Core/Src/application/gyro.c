@@ -65,8 +65,6 @@ void GyroInit()
 {
     // turn on LED
     HAL_GPIO_WritePin(GPIOC, GPIO_PIN_9, GPIO_PIN_SET);
-    BatteryCheckOn();
-    setbuf(stdout, NULL);
 
     uint8_t who_am_i;
 
@@ -153,7 +151,7 @@ void GetGyroData()
     gz_x_pre[0] = gz_nonfil;
     gz_y_pre[0] = filtered_gyro_z;
 
-    gz = filtered_gyro_z; // IIR filter
-    // gz = gz_nonfil; // no filter
+    // gz = filtered_gyro_z; // IIR filter
+    gz = gz_nonfil; // no filter
     yaw += gz * 0.01;
 }
