@@ -64,9 +64,6 @@ void UpdateIRSensorData()
       max_fl = fl[i];
     if (fr[i] > max_fr)
       max_fr = fr[i];
-  }
-  for (int i = SAMPLING_COUNT - 1; i >= 0; i--)
-  {
     if (bl[i] > max_bl)
       max_bl = bl[i];
     if (br[i] > max_br)

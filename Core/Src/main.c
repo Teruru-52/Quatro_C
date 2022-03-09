@@ -65,9 +65,8 @@ int cnt = 0;
 int cnt16kHz = 0;
 int cnt1kHz = 0;
 int cnt100Hz = 0;
-int flag_turn = 0;
-int cnt_turn = 0;
-// int cnt100Hz = 0;
+// int flag_turn = 0;
+// int cnt_turn = 0;
 
 extern float yaw, gz;
 extern uint32_t ir_fl, ir_fr, ir_bl, ir_br;
@@ -92,7 +91,7 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
         }
         else
         {
-          // UpdateIRSensorData();
+          UpdateIRSensorData();
           GetGyroData();
           GetEncoderData();
 
