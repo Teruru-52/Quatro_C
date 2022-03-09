@@ -84,28 +84,28 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
       cnt16kHz = (cnt16kHz + 1) % 16;
       if (cnt16kHz == 0) //割込み1kHz
       {
-        if (count_idntm >= 1000)
+        if (count_idnt >= 3000)
         { // count_idnt 3秒で停止  // count_identm 2.54秒で停止
           flag_offset = false;
           MotorStop();
         }
         else
         {
-          // GetGyroData(&gyro_z);
-          MSequenceInput(&data_iden, &gyro_z, &bat_voltage, &m_seq);
-          // RotationControl(&bat_voltage, &data_iden, &gyro_z);
+          GetGyroData(&gyro_z);
+          // MSequenceInput(&data_iden, &gyro_z, &bat_voltage, &m_seq);
+          RotationControl(&bat_voltage, &data_iden, &gyro_z);
         }
         count_idnt++;
         cnt1kHz = (cnt1kHz + 1) % 1000;
-        if (cnt1kHz % 20 == 0) // 割込み50Hz
-        {
-          count_idntm++;
-          GetGyroData(&gyro_z);
-        }
-        if (cnt1kHz % 80 == 0) // 割込み12.5Hz
-        {
-          count_mseq++;
-        }
+        // if (cnt1kHz % 20 == 0) // 割込み50Hz
+        // {
+        //   count_idntm++;
+        //   GetGyroData(&gyro_z);
+        // }
+        // if (cnt1kHz % 80 == 0) // 割込み12.5Hz
+        // {
+        //   count_mseq++;
+        // }
 
         if (cnt1kHz % 10 == 0)
         { //割込み100Hz
