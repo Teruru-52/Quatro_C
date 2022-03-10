@@ -2,14 +2,14 @@
 #define _CONTROL_H_
 #include "main.h"
 
-#define YAW_PID_KP 20.0f
-#define YAW_PID_KI 0.0f
-#define YAW_PID_KD 0.0
+#define YAW_PID_KP 500.0f
+#define YAW_PID_KI 400.0f
+#define YAW_PID_KD 100.0f
 
-#define GYRO_PID_KP  948.0f
-#define GYRO_PID_KI  2240.0f
-#define GYRO_PID_KD  77.3f
-#define D_FILTER_COFF 0.5073f
+#define GYRO_PID_KP  18.2f
+#define GYRO_PID_KI  332.0f
+#define GYRO_PID_KD  -0.072f
+#define D_FILTER_COFF 0.7249f
 
 #define VEL_PID_KP 0.166f
 #define VEL_PID_KI 0.42f
