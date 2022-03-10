@@ -1,9 +1,8 @@
 #include "gyro.h"
 
-bool flag_offset = false;
-bool flag_gyro = false;
-
+static bool flag_gyro = false;
 static float gz_offset;
+
 static float gz_y_pre[4], gz_x_pre[4];
 float gz, yaw = 0;
 
@@ -113,7 +112,7 @@ void GyroOffsetCalc()
         // H:8bit shift, Link h and l
         gz_raw = (int16_t)((uint16_t)(read_byte(GYRO_ZOUT_H) << 8) | (uint16_t)read_byte(GYRO_ZOUT_L));
         // printf("%d\r\n", gz_raw);
-        gz_nonfil = (float)(gz_raw / GYRO_FACTOR); // dps to deg/sec
+        gz_nonfil = (float)(gz_raw / GYRO_FACTOR) * M_PI / 180.0f; // dps to deg/sec
 
         gz_sum += gz_nonfil;
         HAL_Delay(1);
@@ -121,16 +120,13 @@ void GyroOffsetCalc()
     gz_offset = gz_sum / 1000.0;
     // printf("%f\r\n", gyro_offset);
 
-    BatteryCheckOff();
     // turn off LED
     HAL_GPIO_WritePin(GPIOC, GPIO_PIN_9, GPIO_PIN_RESET);
 
     IIRInit();
-
-    flag_offset = true;
 }
 
-void GetGyroData()
+void UpdateGyroData()
 {
     int16_t gz_raw;
     float gz_nonfil;
@@ -138,7 +134,7 @@ void GetGyroData()
     // H:8bit shift, Link h and l
     gz_raw = (int16_t)((uint16_t)(read_byte(GYRO_ZOUT_H) << 8) | (uint16_t)read_byte(GYRO_ZOUT_L));
     // printf("%d\r\n", gz_raw);
-    gz_nonfil = (float)(gz_raw / GYRO_FACTOR) - gz_offset; // dps to deg/sec
+    gz_nonfil = (float)(gz_raw / GYRO_FACTOR) * M_PI / 180.0f - gz_offset; // dps to deg/sec
 
     float filtered_gyro_z = gyro_fil_coeff.b0 * gz_nonfil + gyro_fil_coeff.b1 * gz_x_pre[0] + gyro_fil_coeff.b2 * gz_x_pre[1] + gyro_fil_coeff.a1 * gz_y_pre[0] + gyro_fil_coeff.a2 * gz_y_pre[1];
 

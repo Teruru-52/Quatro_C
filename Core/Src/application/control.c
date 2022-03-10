@@ -12,6 +12,11 @@ static float pre_deriv3;
 static const float radious = 0.012f;
 static float pos = 0.0f;
 
+float u_left, u_right;
+float u_turn;
+
+extern flag_mode;
+
 Control_Typedef pid_1, pid_2, pid_3;
 
 // static float dt_recip;  // 1/sampling time
@@ -22,7 +27,7 @@ void PIDControlInit(Control_Typedef *pid1, Control_Typedef *pid2, Control_Typede
   pid1->kp = YAW_PID_KP;
   pid1->ki = YAW_PID_KI;
   pid1->kd = YAW_PID_KD;
-  pid1->ref = 90.0f;
+  pid1->ref = 0.0f;
   // Angular Velocity Control
   pid2->kp = GYRO_PID_KP;
   pid2->ki = GYRO_PID_KI;
@@ -52,7 +57,7 @@ void SetReference(Control_Typedef *pid1, float ref_ang)
 float AngleControl(Control_Typedef *pid1)
 {
   float error, deriv, vel_ref;
-  error = (pid1->ref - yaw) * M_PI / 180.0f;
+  error = pid1->ref - yaw;
   sum_error += error * CONTROL_PERIOD;
   deriv = (error - pre_error) / CONTROL_PERIOD;
   vel_ref = pid1->kp * error + pid1->ki * sum_error + pid1->kd * deriv;
@@ -66,7 +71,7 @@ float AngularVelocityControl(Control_Typedef *pid2)
 {
   float error2, deriv2, u_ang;
   pid2->ref = AngleControl(&pid_1);
-  error2 = (pid2->ref - gz) * M_PI / 180.0f;
+  error2 = pid2->ref - gz;
   sum_error2 += error2 * CONTROL_PERIOD;
   deriv2 = (error2 - pre_error2) / CONTROL_PERIOD;
   deriv2 = D_FILTER_COFF * pre_deriv2 + (1.0f - D_FILTER_COFF) * deriv2;
@@ -84,6 +89,7 @@ float VelocityControl(Control_Typedef *pid3)
   error3 = (pid3->ref - velocity); // [rad/s]
   sum_error3 += error3 * CONTROL_PERIOD;
   deriv3 = (error3 - pre_error3) / CONTROL_PERIOD;
+  deriv3 = D_FILTER_COFF2 * pre_deriv3 + (1.0f - D_FILTER_COFF2) * deriv3;
   u_vel = pid3->kp * error3 + pid3->ki * sum_error3 + pid3->kd * deriv3;
 
   pre_error3 = error3;
@@ -104,6 +110,7 @@ void PartyTrick()
 {
   float u_ang;
   u_ang = AngularVelocityControl(&pid_2);
+  u_turn = u_ang;
 
   if (u_ang >= MAX_INPUT)
     u_ang = MAX_INPUT;
@@ -129,11 +136,11 @@ void PartyTrick()
 void GoStraight()
 {
   float u_ang, u_vel;
-  float u_left, u_right;
   u_ang = AngularVelocityControl(&pid_2);
   u_vel = VelocityControl(&pid_3);
-  u_left = (int)(1000.0 / bat_vol * (u_vel - u_ang));
-  u_right = (int)(1000.0 / bat_vol * (u_vel + u_ang));
+  u_ang = 0;
+  u_left = (int)(u_vel - u_ang);
+  u_right = (int)(u_vel + u_ang);
 
   if (u_left >= MAX_INPUT)
     u_left = MAX_INPUT;
@@ -156,9 +163,9 @@ void DetectFrontWall()
   if (ir_bl > 2400 && ir_br > 2400)
   {
     MotorStop();
-    HAL_Delay(500);
-    SetReference(&pid_1, 90.0);
-    flag_turn = 1;
+    flag_mode = 2;
+    // HAL_Delay(500);
+    // SetReference(&pid_1, 90.0);
   }
 }
 

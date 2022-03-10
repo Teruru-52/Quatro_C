@@ -59,8 +59,7 @@ void SystemClock_Config(void);
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
-extern bool flag_offset;
-int flag_sensor = 0;
+int flag_mode = 0;
 int cnt = 0;
 int cnt16kHz = 0;
 int cnt1kHz = 0;
@@ -72,6 +71,8 @@ extern float yaw, gz;
 extern uint32_t ir_fl, ir_fr, ir_bl, ir_br;
 extern float bat_vol;
 extern float velocityL, velocityR, velocity;
+extern float u_left, u_right;
+extern float u_turn;
 
 void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 {
@@ -79,26 +80,26 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
   {
     ReadFrontIRSensor();
     ReadBackIRSensor();
-    if (flag_sensor == 1)
+    if (flag_mode == 1)
     {
       cnt16kHz = (cnt16kHz + 1) % 160;
       if (cnt16kHz == 0) //割込み100Hz
       {
-        if (cnt >= 5000) // cnt 50秒で停止
+        if (cnt >= 2000) // cnt 2秒で停止
         {
-          flag_sensor = 2;
+          flag_mode = 2;
           MotorStop();
         }
         else
         {
           UpdateIRSensorData();
-          GetGyroData();
-          GetEncoderData();
+          UpdateGyroData();
+          UpdateEncoderData();
 
-          PartyTrick();
-          // GoStraight();
+          // PartyTrick();
+          GoStraight();
           // PositionControl();
-          // DetectFrontWall();
+          DetectFrontWall();
           // Back();
           // FrontWallCorrection();
           // Turn();
@@ -116,7 +117,9 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 
         if (cnt100Hz % 20 == 0)
         {
-          printf("%f, %f \r\n", yaw, gz);
+          // printf("%f, %f \r\n", yaw, gz);
+          // printf("%f, %f \r\n", u_left, u_right);
+          printf("%f \r\n", u_turn);
           // printf("%ld, %ld, %f \r\n", ir_fl, ir_fr);
           // printf("%ld, %ld\r\n", ir_bl, ir_br);
           // printf("%d, %d\r\n", (int)(IR_KP_LEFT * (IR_THR_LEFT - (int)ir_bl)), (int)(IR_KP_RIGHT * (IR_THR_RIGHT - (int)ir_br)));
@@ -206,7 +209,7 @@ int main(void)
 
     /* USER CODE BEGIN 3 */
     // Start
-    if (flag_sensor == 0)
+    if (flag_mode == 0)
     {
       // Select Mode
       if (HAL_GPIO_ReadPin(GPIOB, GPIO_PIN_2) == 0)
@@ -250,12 +253,13 @@ int main(void)
         HAL_GPIO_WritePin(GPIOC, GPIO_PIN_8, GPIO_PIN_RESET);
         HAL_GPIO_WritePin(GPIOC, GPIO_PIN_9, GPIO_PIN_RESET);
 
+        BatteryCheckOff();
         GyroInit(); // who_am_i
         IIRInit();
         PIDControlInit(&pid_1, &pid_2, &pid_3);
         GyroOffsetCalc();
 
-        flag_sensor = 1;
+        flag_mode = 1;
       }
     }
   }

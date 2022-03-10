@@ -1,7 +1,6 @@
 #ifndef _GYRO_H_
 #define _GYRO_H_
 #include "main.h"
-#include "battery.h"
 
 #define ADDRESS           0x68
 #define WHO_AM_I          0x75
@@ -32,6 +31,6 @@ void write_byte(uint8_t reg, uint8_t data);
 void IIRInit();
 void GyroInit();
 void GyroOffsetCalc();
-void GetGyroData();
+void UpdateGyroData();
 
 #endif // _GYRO_H_

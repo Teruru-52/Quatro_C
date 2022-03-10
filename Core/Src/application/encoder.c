@@ -5,7 +5,7 @@
 float velocityL, velocityR, velocity;
 static const float gear_ratio = 11.0 / 43.0;
 
-void GetEncoderData()
+void UpdateEncoderData()
 {
   int16_t countl = 0;
   int16_t countr = 0;
@@ -28,7 +28,7 @@ void GetEncoderData()
     countr = (int16_t)enc_buff_r;
   }
 
-  velocityL = (float)(countl) / 4096.0 * 2.0 * M_PI * 100.0 * gear_ratio; // [rad/s]
-  velocityR = (float)(countr) / 4096.0 * 2.0 * M_PI * 100.0 * gear_ratio; // gear ratio 43:11
-  velocity = (velocityL + velocityR) / 2.0;
+  velocityL = (float)(countl) / 4096.0f * 2.0f * M_PI * 100.0f * gear_ratio; // [rad/s]
+  velocityR = (float)(countr) / 4096.0f * 2.0f * M_PI * 100.0f * gear_ratio; // gear ratio 43:11
+  velocity = (velocityL + velocityR) / 2.0f;
 }
