@@ -151,8 +151,8 @@ void GetGyroData(Gyro_Typedef *gyro)
     gyro_x_pre[0] = gz;
     gyro_y_pre[0] = filtered_gyro_z;
 
-    gyro->gz = filtered_gyro_z; //filter
-    // gyro->gz = gz;  // nonfilter
+    // gyro->gz = filtered_gyro_z; //filter
+    gyro->gz = gz;  // nonfilter
     yaw += gyro->gz * 0.001;
     gyro->yaw = yaw;
 }
