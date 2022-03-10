@@ -2,30 +2,31 @@
 #define _CONTROL_H_
 #include "main.h"
 
-#define YAW_PID_KP 20
-#define YAW_PID_KI 20
-#define YAW_PID_KD 5.0
+#define YAW_PID_KP 20.0f
+#define YAW_PID_KI 0.0f
+#define YAW_PID_KD 0.0
 
-#define GYRO_PID_KP 0.639
-#define GYRO_PID_KI 15.2
-#define GYRO_PID_KD 0.0
+#define GYRO_PID_KP 3.75f
+#define GYRO_PID_KI 15.7f
+// #define GYRO_PID_KD 0.213f
+#define GYRO_PID_KD 0.0f
+#define D_FILTER_COFF 0.383f
 
-#define VEL_PID_KP 0.166
-#define VEL_PID_KI 0.42
+#define VEL_PID_KP 0.166f
+#define VEL_PID_KI 0.42f
 // #define VEL_PID_KD  0.0163
-#define VEL_PID_KD 0.0
+#define VEL_PID_KD 0.0f
 
-#define MAX_INPUT 1000.0
+#define MAX_INPUT 1000.0f
 
 #define CONTROL_PERIOD 0.01f
-#define D_FILTER_COFF 0.025f // 3.98Hz
 
-#define IR_KP_LEFT 0.5
-#define IR_KI_LEFT 0.1
-#define IR_KP_RIGHT 0.5
-#define IR_KI_RIGHT 0.1
-#define IR_THR_LEFT 3300
-#define IR_THR_RIGHT 3000
+#define IR_KP_LEFT 0.5f
+#define IR_KI_LEFT 0.1f
+#define IR_KP_RIGHT 0.5f
+#define IR_KI_RIGHT 0.1f
+#define IR_THR_LEFT 3300.0f
+#define IR_THR_RIGHT 3000.0f
 
 extern uint32_t ir_fl, ir_fr, ir_bl, ir_br;
 extern float yaw, gz;

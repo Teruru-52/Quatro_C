@@ -1,16 +1,16 @@
 #include "control.h"
 
 static float pre_error;
-static float sum_error = 0.0;
+static float sum_error = 0.0f;
 static float pre_error2;
-static float sum_error2 = 0.0;
+static float sum_error2 = 0.0f;
 static float pre_deriv2;
 static float pre_error3;
-static float sum_error3 = 0.0;
+static float sum_error3 = 0.0f;
 static float pre_deriv3;
 
-static const float radious = 0.012;
-static float pos = 0.0;
+static const float radious = 0.012f;
+static float pos = 0.0f;
 
 Control_Typedef pid_1, pid_2, pid_3;
 
@@ -22,25 +22,25 @@ void PIDControlInit(Control_Typedef *pid1, Control_Typedef *pid2, Control_Typede
   pid1->kp = YAW_PID_KP;
   pid1->ki = YAW_PID_KI;
   pid1->kd = YAW_PID_KD;
-  pid1->ref = 0.0;
+  pid1->ref = 0.0f;
   // Angular Velocity Control
   pid2->kp = GYRO_PID_KP;
   pid2->ki = GYRO_PID_KI;
   pid2->kd = GYRO_PID_KD;
-  pid2->ref = 0.0;
+  pid2->ref = 0.0f;
   // Velocity Control
   pid3->kp = VEL_PID_KP;
   pid3->ki = VEL_PID_KI;
   pid3->kd = VEL_PID_KD;
-  pid3->ref = 100.0; // [rad/s]
+  pid3->ref = 100.0f; // [rad/s]
 
-  yaw = 0;
-  pre_error = 0.0;
-  sum_error = 0.0;
-  pre_error2 = 0.0;
-  sum_error2 = 0.0;
-  pre_error3 = 0.0;
-  sum_error3 = 0.0;
+  yaw = 0.0f;
+  pre_error = 0.0f;
+  sum_error = 0.0f;
+  pre_error2 = 0.0f;
+  sum_error2 = 0.0f;
+  pre_error3 = 0.0f;
+  sum_error3 = 0.0f;
 }
 
 void SetReference(Control_Typedef *pid1, float ref_ang)
@@ -52,9 +52,9 @@ void SetReference(Control_Typedef *pid1, float ref_ang)
 float AngleControl(Control_Typedef *pid1)
 {
   float error, deriv, vel_ref;
-  error = (pid1->ref - yaw) * M_PI / 180;
+  error = (pid1->ref - yaw) * M_PI / 180.0f;
   sum_error += error * CONTROL_PERIOD;
-  deriv = (pre_error - error) / CONTROL_PERIOD;
+  deriv = (error - pre_error) / CONTROL_PERIOD;
   vel_ref = pid1->kp * error + pid1->ki * sum_error + pid1->kd * deriv;
 
   pre_error = error;
@@ -66,10 +66,10 @@ float AngularVelocityControl(Control_Typedef *pid2)
 {
   float error2, deriv2, u_ang;
   pid2->ref = AngleControl(&pid_1);
-  error2 = (pid2->ref - gz) * M_PI / 180;
+  error2 = (pid2->ref - gz) * M_PI / 180.0f;
   sum_error2 += error2 * CONTROL_PERIOD;
-  deriv2 = (pre_error2 - error2) / CONTROL_PERIOD;
-  // deriv2 = pre_deriv2 + (deriv2 - pre_deriv2) * D_FILTER_COFF;
+  deriv2 = (error2 - pre_error2) / CONTROL_PERIOD;
+  deriv2 = D_FILTER_COFF * pre_deriv2 + (1.0f - D_FILTER_COFF) * deriv2;
   u_ang = pid2->kp * error2 + pid2->ki * sum_error2 + pid2->kd * deriv2;
 
   pre_error2 = error2;
@@ -83,8 +83,7 @@ float VelocityControl(Control_Typedef *pid3)
   float error3, deriv3, u_vel;
   error3 = (pid3->ref - velocity); // [rad/s]
   sum_error3 += error3 * CONTROL_PERIOD;
-  deriv3 = (pre_error3 - error3) / CONTROL_PERIOD;
-  // deriv3 = pre_deriv3 + (deriv3 - pre_deriv3)*D_FILTER_COFF;
+  deriv3 = (error3 - pre_error3) / CONTROL_PERIOD;
   u_vel = pid3->kp * error3 + pid3->ki * sum_error3 + pid3->kd * deriv3;
 
   pre_error3 = error3;
