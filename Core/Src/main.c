@@ -94,10 +94,11 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
           GetGyroData(&gyro_z);
           // RotationControl(&bat_voltage, &data_iden, &gyro_z);
           GetEncoderData(&encoder_LR);
-          AngleControl(&gyro_z, &pid_control);
-          AngularVelocityControl(&gyro_z, &pid_control);
-          VelocityControl(&encoder_LR, &pid_control);
-          PIDControl(&pid_control, &bat_voltage);
+          // AngleControl(&gyro_z, &pid_control);
+          // AngularVelocityControl(&gyro_z, &pid_control);
+          // VelocityControl(&encoder_LR, &pid_control);
+          // PIDControl(&pid_control, &bat_voltage);
+          TranslationControl(&bat_voltage, &data_iden, &encoder_LR);
         }
         count_idnt++;
         cnt1kHz = (cnt1kHz + 1) % 1000;

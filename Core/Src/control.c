@@ -116,7 +116,7 @@ void PIDControl(Control_Typedef *pid, Battery_Typedef *battery)
 
 void TranslationControl(Battery_Typedef *battery, Data_Typedef *data, Encoder_Typedef *encoder)
 {
-  int u_iden = (int)(1000.0 / battery->bat_vol); // 1.0[V]
+  int u_iden = 200; // 1.0[V]
   // data->outputL[count_idnt] = encoder->velocityL;
   // data->outputR[count_idnt] = encoder->velocityR;
   data->output[count_idnt] = encoder->velocity;
@@ -288,8 +288,8 @@ void MSequenceGen(MSequence_Typedef *msequence) // n = 7, N = 127
 
 void MotorStop()
 {
-  __HAL_TIM_SET_COMPARE(&htim5, TIM_CHANNEL_1, 0);
-  __HAL_TIM_SET_COMPARE(&htim5, TIM_CHANNEL_2, 0);
-  __HAL_TIM_SET_COMPARE(&htim5, TIM_CHANNEL_3, 0);
-  __HAL_TIM_SET_COMPARE(&htim5, TIM_CHANNEL_4, 0);
+  __HAL_TIM_SET_COMPARE(&htim5, TIM_CHANNEL_1, MAX_INPUT);
+  __HAL_TIM_SET_COMPARE(&htim5, TIM_CHANNEL_2, MAX_INPUT);
+  __HAL_TIM_SET_COMPARE(&htim5, TIM_CHANNEL_3, MAX_INPUT);
+  __HAL_TIM_SET_COMPARE(&htim5, TIM_CHANNEL_4, MAX_INPUT);
 }
