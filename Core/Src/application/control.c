@@ -102,10 +102,8 @@ void PositionControl(){
 
 void PartyTrick()
 {
-  float u, u_ang;
-  u = AngularVelocityControl(&pid_2);
-
-  u_ang = (int)(1000.0 / bat_vol * u);
+  float u_ang;
+  u_ang = AngularVelocityControl(&pid_2);
 
   if (u_ang >= MAX_INPUT)
     u_ang = MAX_INPUT;
@@ -200,10 +198,8 @@ void FrontWallCorrection(){
 
 void Turn()
 {
-  float u, u_ang;
-  u = AngularVelocityControl(&pid_2);
-
-  u_ang = (int)(1000.0 / bat_vol * u);
+  float u_ang;
+  u_ang = AngularVelocityControl(&pid_2);
 
   if (u_ang >= MAX_INPUT)
     u_ang = MAX_INPUT;
