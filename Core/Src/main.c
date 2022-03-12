@@ -59,13 +59,15 @@ void SystemClock_Config(void);
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
+bool flag_int = 0;
+int main_mode = 0;
 int flag_mode = 0;
 int cnt = 0;
 int cnt16kHz = 0;
 int cnt1kHz = 0;
 int cnt100Hz = 0;
 // int flag_turn = 0;
-// int cnt_turn = 0;
+int cnt_mode = 0;
 
 extern float yaw, gz;
 extern uint32_t ir_fl, ir_fr, ir_bl, ir_br;
@@ -80,14 +82,16 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
   {
     ReadFrontIRSensor();
     ReadBackIRSensor();
-    if (flag_mode == 1)
+    if (flag_int)
     {
-      cnt16kHz = (cnt16kHz + 1) % 160;
-      if (cnt16kHz == 0) //割込み100Hz
+      cnt16kHz = (cnt16kHz + 1) % 16;
+      if (cnt16kHz == 0) //割込み1kHz
       {
-        if (cnt >= 2000) // cnt 2秒で停止
+        cnt++;
+        cnt1kHz = (cnt1kHz + 1) % 1000;
+        if (cnt >= 20000) // cnt 20秒で停止
         {
-          flag_mode = 2;
+          flag_int = false;
           MotorStop();
         }
         else
@@ -96,36 +100,43 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
           UpdateGyroData();
           UpdateEncoderData();
 
+          // if(flag_mode == 0){
+          //   GoStraight();
+          //   DetectFrontWall();
+          // }
+          // else if (flag_mode == 1){
+          //   Turn();
+          //   cnt_mode++;
+          //   if (cnt_mode > 1000){
+          //     cnt_mode = 0;
+          //     MotorStop();
+          //     main_mode = 2;
+          //     flag_int = false;
+          //   }
+          // }
+          // else if (flag_mode == 2){
+          //   Back();
+          //   main_mode = 3;
+          //   flag_int = false;
+          // }
+
           // PartyTrick();
-          GoStraight();
+          // GoStraight();
           // PositionControl();
-          DetectFrontWall();
+          // DetectFrontWall();
           // Back();
           // FrontWallCorrection();
           // Turn();
         }
-        cnt++;
-        cnt100Hz = (cnt100Hz + 1) % 100;
-        // if (cnt1kHz % 10 == 0)
-        // { //割込み100Hz
-        //   cnt100Hz = (cnt100Hz + 1) % 100;
-        // }
-        if (cnt100Hz == 0)
+
+        if (cnt1kHz == 0)
           HAL_GPIO_WritePin(GPIOC, GPIO_PIN_8, GPIO_PIN_SET);
         else
           HAL_GPIO_WritePin(GPIOC, GPIO_PIN_8, GPIO_PIN_RESET);
 
-        if (cnt100Hz % 20 == 0)
+        if (cnt1kHz % 200 == 0)
         {
-          // printf("%f, %f \r\n", yaw, gz);
-          // printf("%f, %f \r\n", u_left, u_right);
-          printf("%f \r\n", u_turn);
-          // printf("%ld, %ld, %f \r\n", ir_fl, ir_fr);
-          // printf("%ld, %ld\r\n", ir_bl, ir_br);
-          // printf("%d, %d\r\n", (int)(IR_KP_LEFT * (IR_THR_LEFT - (int)ir_bl)), (int)(IR_KP_RIGHT * (IR_THR_RIGHT - (int)ir_br)));
-          // printf("%ld, %ld, %ld, %ld \r\n", ir_fl, ir_fr, ir_bl, ir_br);
-          // printf("%f, %f \r\n", velocityL, velocityR);
-          // printf("%f \r\n", bat_vol);
+          ExecuteLogger();
         }
       }
     }
@@ -189,16 +200,7 @@ int main(void)
   HAL_TIM_PWM_Start(&htim11, TIM_CHANNEL_1);
 
   setbuf(stdout, NULL);
-  __HAL_TIM_SET_COMPARE(&htim2, TIM_CHANNEL_1, 10);
-  HAL_Delay(50);
-  __HAL_TIM_SET_COMPARE(&htim2, TIM_CHANNEL_1, 0);
-  ReadFrontIRSensor();
-  BatteryCheckOn();
-  IRPwmStart();
-
-  int count = 0;
-  int SW_read = 0;
-  // FanMotorDrive();
+  StartUp();
   /* USER CODE END 2 */
 
   /* Infinite loop */
@@ -208,60 +210,24 @@ int main(void)
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
-    // Start
-    if (flag_mode == 0)
-    {
-      // Select Mode
-      if (HAL_GPIO_ReadPin(GPIOB, GPIO_PIN_2) == 0)
-      {
-        count++;
-        if (count > 200)
-        {
-          SW_read++;
-          if (SW_read > 3)
-          {
-            SW_read = 0;
-          }
-          count = 0;
-        }
-      }
-
-      if (SW_read == 0)
-      {
-        HAL_GPIO_WritePin(GPIOC, GPIO_PIN_8, GPIO_PIN_RESET);
-        HAL_GPIO_WritePin(GPIOC, GPIO_PIN_9, GPIO_PIN_RESET);
-      }
-      else if (SW_read == 1)
-      {
-        HAL_GPIO_WritePin(GPIOC, GPIO_PIN_8, GPIO_PIN_SET);
-        HAL_GPIO_WritePin(GPIOC, GPIO_PIN_9, GPIO_PIN_RESET);
-      }
-      else if (SW_read == 2)
-      {
-        HAL_GPIO_WritePin(GPIOC, GPIO_PIN_8, GPIO_PIN_RESET);
-        HAL_GPIO_WritePin(GPIOC, GPIO_PIN_9, GPIO_PIN_SET);
-      }
-      else
-      {
-        HAL_GPIO_WritePin(GPIOC, GPIO_PIN_8, GPIO_PIN_SET);
-        HAL_GPIO_WritePin(GPIOC, GPIO_PIN_9, GPIO_PIN_SET);
-      }
-
-      // Start Control
-      if (ir_bl > 3000 && ir_br > 3000)
-      {
-        HAL_GPIO_WritePin(GPIOC, GPIO_PIN_8, GPIO_PIN_RESET);
-        HAL_GPIO_WritePin(GPIOC, GPIO_PIN_9, GPIO_PIN_RESET);
-
-        BatteryCheckOff();
-        GyroInit(); // who_am_i
-        IIRInit();
-        PIDControlInit(&pid_1, &pid_2, &pid_3);
-        GyroOffsetCalc();
-
-        flag_mode = 1;
-      }
+    if(main_mode == 0){
+      ModeSelect();
     }
+    // else if(main_mode == 1){
+    //   HAL_Delay(500);
+    //   flag_mode = 1;
+    //   flag_int = true;
+    // }
+    // else if(main_mode == 2){
+    //   HAL_Delay(300);
+    //   flag_mode = 2;
+    //   flag_int = true;
+    // }
+    // else if(main_mode == 3){
+    //   HAL_Delay(300);
+    //   MotorStop();
+    //   main_mode = 100;
+    // }
   }
   /* USER CODE END 3 */
 }

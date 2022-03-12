@@ -4,7 +4,7 @@
 
 #define SAMPLING_COUNT 16
 
-void IRPwmStart();
+void IR_PWM_Start();
 void ReadFrontIRSensor();
 void ReadBackIRSensor();
 void UpdateIRSensorData();

@@ -9,13 +9,11 @@ static float pre_error3;
 static float sum_error3 = 0.0f;
 static float pre_deriv3;
 
-static const float radious = 0.012f;
+static const float radious = 0.0125f;
 static float pos = 0.0f;
 
 float u_left, u_right;
 float u_turn;
-
-extern flag_mode;
 
 Control_Typedef pid_1, pid_2, pid_3;
 
@@ -27,7 +25,7 @@ void PIDControlInit(Control_Typedef *pid1, Control_Typedef *pid2, Control_Typede
   pid1->kp = YAW_PID_KP;
   pid1->ki = YAW_PID_KI;
   pid1->kd = YAW_PID_KD;
-  pid1->ref = 0.0f;
+  pid1->ref = M_PI;
   // Angular Velocity Control
   pid2->kp = GYRO_PID_KP;
   pid2->ki = GYRO_PID_KI;
@@ -37,7 +35,7 @@ void PIDControlInit(Control_Typedef *pid1, Control_Typedef *pid2, Control_Typede
   pid3->kp = VEL_PID_KP;
   pid3->ki = VEL_PID_KI;
   pid3->kd = VEL_PID_KD;
-  pid3->ref = 100.0f; // [rad/s]
+  pid3->ref = 20.0f; // [rad/s]
 
   yaw = 0.0f;
   pre_error = 0.0f;
@@ -102,7 +100,7 @@ void PositionControl(){
   pos += velocity * radious * CONTROL_PERIOD;
   if(pos > 0.15) { // pos > 15[cm]
     MotorStop();
-    flag_sensor = 2;
+    flag_int = false;
   }
 }
 
@@ -138,7 +136,6 @@ void GoStraight()
   float u_ang, u_vel;
   u_ang = AngularVelocityControl(&pid_2);
   u_vel = VelocityControl(&pid_3);
-  u_ang = 0;
   u_left = (int)(u_vel - u_ang);
   u_right = (int)(u_vel + u_ang);
 
@@ -163,9 +160,8 @@ void DetectFrontWall()
   if (ir_bl > 2400 && ir_br > 2400)
   {
     MotorStop();
-    flag_mode = 2;
-    // HAL_Delay(500);
-    // SetReference(&pid_1, 90.0);
+    // SetReference(&pid_1, M_PI);
+    flag_int = false;
   }
 }
 
@@ -193,12 +189,12 @@ void FrontWallCorrection(){
   }
 
   if (u_left >= 300 || u_left <= -300){
-    flag_sensor = 2;
+    flag_int = false;
     MotorStop();
   }
 
   if (u_right >= 300 || u_right <= -300){
-    flag_sensor = 2;
+    flag_int = false;
     MotorStop();
   }
 }
@@ -231,8 +227,8 @@ void Turn()
 
 void Back(){
   __HAL_TIM_SET_COMPARE(&htim5, TIM_CHANNEL_1, MAX_INPUT);
-  __HAL_TIM_SET_COMPARE(&htim5, TIM_CHANNEL_2, MAX_INPUT - 50);
-  __HAL_TIM_SET_COMPARE(&htim5, TIM_CHANNEL_3, MAX_INPUT - 50);
+  __HAL_TIM_SET_COMPARE(&htim5, TIM_CHANNEL_2, MAX_INPUT - 100);
+  __HAL_TIM_SET_COMPARE(&htim5, TIM_CHANNEL_3, MAX_INPUT - 100);
   __HAL_TIM_SET_COMPARE(&htim5, TIM_CHANNEL_4, MAX_INPUT);
 }
 

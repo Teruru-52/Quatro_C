@@ -2,23 +2,23 @@
 #define _CONTROL_H_
 #include "main.h"
 
-#define YAW_PID_KP 20.0f
-#define YAW_PID_KI 5.0f
-#define YAW_PID_KD 1.0f
+#define YAW_PID_KP 10.0f
+#define YAW_PID_KI 4.0f
+#define YAW_PID_KD 0.5f
 
 #define GYRO_PID_KP  18.2f
 #define GYRO_PID_KI  332.0f
 #define GYRO_PID_KD  -0.072f
-#define D_FILTER_COFF 0.7249f
+#define D_FILTER_COFF 0.967f
 
-#define VEL_PID_KP 20.5f
-#define VEL_PID_KI 52.9f
-#define VEL_PID_KD 1.75f
-#define D_FILTER_COFF2 0.5f
+#define VEL_PID_KP 19.72f
+#define VEL_PID_KI 52.0f
+#define VEL_PID_KD 1.548f
+#define D_FILTER_COFF2 0.301f
 
 #define MAX_INPUT 1000.0f
 
-#define CONTROL_PERIOD 0.01f
+#define CONTROL_PERIOD 0.001f
 
 #define IR_KP_LEFT 0.5f
 #define IR_KI_LEFT 0.1f
@@ -34,6 +34,9 @@ extern float velocityR;
 extern float bat_vol;
 extern int flag_turn;
 extern int flag_sensor;
+extern bool flag_int;
+extern int main_mode;
+extern int flag_mode;
 
 typedef struct
 {

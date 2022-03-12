@@ -7,18 +7,6 @@ static float gz_y_pre[4], gz_x_pre[4];
 float gz, yaw = 0;
 
 // IIR filter
-// 7hz, 800hz
-// IIR_Coeff gyro_fil_coeff = {1.922286512869545,  -0.92519529534950118, 0.00072719561998898304, 0.0014543912399779661, 0.00072719561998898304};
-
-// 15hz, 800hz
-// IIR_Coeff gyro_fil_coeff = {1.8337326589246479,  -0.84653197479202391, 0.003199828966843966, 0.0063996579336879321, 0.003199828966843966};
-
-// 30hz, 800hz
-// IIR_Coeff gyro_fil_coeff = {1.66920314293119312,  -0.71663387350415764, 0.011857682643241156, 0.023715365286482312, 0.011857682643241156};
-
-// 60hz, 800hz
-// IIR_Coeff gyro_fil_coeff = {1.3489677452527946 ,  -0.51398189421967566, 0.041253537241720303, 0.082507074483440607, 0.041253537241720303};
-
 // 100hz, 800hz
 static IIR_Coeff gyro_fil_coeff = {0.94280904158206336, -0.33333333333333343, 0.09763107293781749, 0.19526214587563498, 0.09763107293781749};
 
@@ -96,10 +84,7 @@ void GyroInit()
     write_byte(GYRO_CONFIG, 0x18); // set gyro config (2000dps)
     HAL_Delay(50);
 
-    // Speaker
-    __HAL_TIM_SET_COMPARE(&htim2, TIM_CHANNEL_1, 10);
-    HAL_Delay(50);
-    __HAL_TIM_SET_COMPARE(&htim2, TIM_CHANNEL_1, 0);
+    Speaker();
 }
 
 void GyroOffsetCalc()
@@ -117,7 +102,7 @@ void GyroOffsetCalc()
         gz_sum += gz_nonfil;
         HAL_Delay(1);
     }
-    gz_offset = gz_sum / 1000.0;
+    gz_offset = gz_sum / 1000.0f;
     // printf("%f\r\n", gyro_offset);
 
     // turn off LED
@@ -149,5 +134,5 @@ void UpdateGyroData()
 
     // gz = filtered_gyro_z; // IIR filter
     gz = gz_nonfil; // no filter
-    yaw += gz * 0.01;
+    yaw += gz * CONTROL_PERIOD;
 }
