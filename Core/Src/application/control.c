@@ -1,13 +1,19 @@
 #include "control.h"
 
 static float pre_error;
-static float sum_error = 0.0;
+static float sum_error = 0.0f;
 static float pre_error2;
-static float sum_error2 = 0.0;
+static float sum_error2 = 0.0f;
 static float pre_deriv2;
 static float pre_error3;
-static float sum_error3 = 0.0;
+static float sum_error3 = 0.0f;
 static float pre_deriv3;
+
+static const float radious = 0.0125f;
+static float pos = 0.0f;
+
+float u_left, u_right;
+float u_turn;
 
 Control_Typedef pid_1, pid_2, pid_3;
 
@@ -19,30 +25,39 @@ void PIDControlInit(Control_Typedef *pid1, Control_Typedef *pid2, Control_Typede
   pid1->kp = YAW_PID_KP;
   pid1->ki = YAW_PID_KI;
   pid1->kd = YAW_PID_KD;
-  pid1->ref = 0.0;
+  pid1->ref = M_PI;
   // Angular Velocity Control
   pid2->kp = GYRO_PID_KP;
   pid2->ki = GYRO_PID_KI;
   pid2->kd = GYRO_PID_KD;
-  pid2->ref = 0.0;
+  pid2->ref = 0.0f;
   // Velocity Control
   pid3->kp = VEL_PID_KP;
   pid3->ki = VEL_PID_KI;
   pid3->kd = VEL_PID_KD;
-  pid3->ref = 100.0; // [rad/s]
+  pid3->ref = 20.0f; // [rad/s]
+
+  yaw = 0.0f;
+  pre_error = 0.0f;
+  sum_error = 0.0f;
+  pre_error2 = 0.0f;
+  sum_error2 = 0.0f;
+  pre_error3 = 0.0f;
+  sum_error3 = 0.0f;
 }
 
 void SetReference(Control_Typedef *pid1, float ref_ang)
 {
+  PIDControlInit(&pid_1, &pid_2, &pid_3);
   pid1->ref = ref_ang;
 }
 
 float AngleControl(Control_Typedef *pid1)
 {
   float error, deriv, vel_ref;
-  error = (pid1->ref - yaw) * M_PI / 180;
+  error = pid1->ref - yaw;
   sum_error += error * CONTROL_PERIOD;
-  deriv = (pre_error - error) / CONTROL_PERIOD;
+  deriv = (error - pre_error) / CONTROL_PERIOD;
   vel_ref = pid1->kp * error + pid1->ki * sum_error + pid1->kd * deriv;
 
   pre_error = error;
@@ -54,10 +69,10 @@ float AngularVelocityControl(Control_Typedef *pid2)
 {
   float error2, deriv2, u_ang;
   pid2->ref = AngleControl(&pid_1);
-  error2 = (pid2->ref - gz) * M_PI / 180;
+  error2 = pid2->ref - gz;
   sum_error2 += error2 * CONTROL_PERIOD;
-  deriv2 = (pre_error2 - error2) / CONTROL_PERIOD;
-  // deriv2 = pre_deriv2 + (deriv2 - pre_deriv2) * D_FILTER_COFF;
+  deriv2 = (error2 - pre_error2) / CONTROL_PERIOD;
+  deriv2 = D_FILTER_COFF * pre_deriv2 + (1.0f - D_FILTER_COFF) * deriv2;
   u_ang = pid2->kp * error2 + pid2->ki * sum_error2 + pid2->kd * deriv2;
 
   pre_error2 = error2;
@@ -71,8 +86,8 @@ float VelocityControl(Control_Typedef *pid3)
   float error3, deriv3, u_vel;
   error3 = (pid3->ref - velocity); // [rad/s]
   sum_error3 += error3 * CONTROL_PERIOD;
-  deriv3 = (pre_error3 - error3) / CONTROL_PERIOD;
-  // deriv3 = pre_deriv3 + (deriv3 - pre_deriv3)*D_FILTER_COFF;
+  deriv3 = (error3 - pre_error3) / CONTROL_PERIOD;
+  deriv3 = D_FILTER_COFF2 * pre_deriv3 + (1.0f - D_FILTER_COFF2) * deriv3;
   u_vel = pid3->kp * error3 + pid3->ki * sum_error3 + pid3->kd * deriv3;
 
   pre_error3 = error3;
@@ -81,12 +96,19 @@ float VelocityControl(Control_Typedef *pid3)
   return u_vel;
 }
 
+void PositionControl(){
+  pos += velocity * radious * CONTROL_PERIOD;
+  if(pos > 0.15) { // pos > 15[cm]
+    MotorStop();
+    flag_int = false;
+  }
+}
+
 void PartyTrick()
 {
-  float u, u_ang;
-  u = AngularVelocityControl(&pid_2);
-
-  u_ang = (int)(1000.0 / bat_vol * u);
+  float u_ang;
+  u_ang = AngularVelocityControl(&pid_2);
+  u_turn = u_ang;
 
   if (u_ang >= MAX_INPUT)
     u_ang = MAX_INPUT;
@@ -112,11 +134,10 @@ void PartyTrick()
 void GoStraight()
 {
   float u_ang, u_vel;
-  float u_left, u_right;
   u_ang = AngularVelocityControl(&pid_2);
   u_vel = VelocityControl(&pid_3);
-  u_left = (int)(1000.0 / bat_vol * (u_vel - u_ang));
-  u_right = (int)(1000.0 / bat_vol * (u_vel + u_ang));
+  u_left = (int)(u_vel - u_ang);
+  u_right = (int)(u_vel + u_ang);
 
   if (u_left >= MAX_INPUT)
     u_left = MAX_INPUT;
@@ -136,15 +157,85 @@ void GoStraight()
 
 void DetectFrontWall()
 {
-  if(ir_bl > 2500 && ir_br > 2500){
+  if (ir_bl > 2400 && ir_br > 2400)
+  {
+    MotorStop();
+    // SetReference(&pid_1, M_PI);
+    flag_int = false;
+  }
+}
+
+void FrontWallCorrection(){
+  int error_l, error_r;
+  int u_left = IR_KP_LEFT * (IR_THR_LEFT - (int)ir_bl);
+  int u_right = IR_KP_RIGHT * (IR_THR_RIGHT - (int)ir_br);
+
+  if (u_left > 0){
+    __HAL_TIM_SET_COMPARE(&htim5, TIM_CHANNEL_1, MAX_INPUT - u_left);
+    __HAL_TIM_SET_COMPARE(&htim5, TIM_CHANNEL_2, MAX_INPUT);
+  }
+  else{ 
+    __HAL_TIM_SET_COMPARE(&htim5, TIM_CHANNEL_1, MAX_INPUT);
+    __HAL_TIM_SET_COMPARE(&htim5, TIM_CHANNEL_2, MAX_INPUT + u_left);
+  }
+
+  if (u_right > 0) {
+    __HAL_TIM_SET_COMPARE(&htim5, TIM_CHANNEL_3, MAX_INPUT);
+    __HAL_TIM_SET_COMPARE(&htim5, TIM_CHANNEL_4, MAX_INPUT - u_right);
+  }
+  else{
+    __HAL_TIM_SET_COMPARE(&htim5, TIM_CHANNEL_3, MAX_INPUT + u_right);
+    __HAL_TIM_SET_COMPARE(&htim5, TIM_CHANNEL_4, MAX_INPUT);
+  }
+
+  if (u_left >= 300 || u_left <= -300){
+    flag_int = false;
+    MotorStop();
+  }
+
+  if (u_right >= 300 || u_right <= -300){
+    flag_int = false;
     MotorStop();
   }
 }
 
+void Turn()
+{
+  float u_ang;
+  u_ang = AngularVelocityControl(&pid_2);
+
+  if (u_ang >= MAX_INPUT)
+    u_ang = MAX_INPUT;
+  if (u_ang <= -MAX_INPUT)
+    u_ang = -MAX_INPUT;
+
+  if (u_ang > 0)
+  {
+    __HAL_TIM_SET_COMPARE(&htim5, TIM_CHANNEL_1, MAX_INPUT);
+    __HAL_TIM_SET_COMPARE(&htim5, TIM_CHANNEL_2, MAX_INPUT - u_ang);
+    __HAL_TIM_SET_COMPARE(&htim5, TIM_CHANNEL_3, MAX_INPUT);
+    __HAL_TIM_SET_COMPARE(&htim5, TIM_CHANNEL_4, MAX_INPUT - u_ang);
+  }
+  else
+  {
+    __HAL_TIM_SET_COMPARE(&htim5, TIM_CHANNEL_1, MAX_INPUT + u_ang);
+    __HAL_TIM_SET_COMPARE(&htim5, TIM_CHANNEL_2, MAX_INPUT);
+    __HAL_TIM_SET_COMPARE(&htim5, TIM_CHANNEL_3, MAX_INPUT + u_ang);
+    __HAL_TIM_SET_COMPARE(&htim5, TIM_CHANNEL_4, MAX_INPUT);
+  }
+}
+
+void Back(){
+  __HAL_TIM_SET_COMPARE(&htim5, TIM_CHANNEL_1, MAX_INPUT);
+  __HAL_TIM_SET_COMPARE(&htim5, TIM_CHANNEL_2, MAX_INPUT - 100);
+  __HAL_TIM_SET_COMPARE(&htim5, TIM_CHANNEL_3, MAX_INPUT - 100);
+  __HAL_TIM_SET_COMPARE(&htim5, TIM_CHANNEL_4, MAX_INPUT);
+}
+
 void MotorStop()
 {
-  __HAL_TIM_SET_COMPARE(&htim5, TIM_CHANNEL_1, 0);
-  __HAL_TIM_SET_COMPARE(&htim5, TIM_CHANNEL_2, 0);
-  __HAL_TIM_SET_COMPARE(&htim5, TIM_CHANNEL_3, 0);
-  __HAL_TIM_SET_COMPARE(&htim5, TIM_CHANNEL_4, 0);
+  __HAL_TIM_SET_COMPARE(&htim5, TIM_CHANNEL_1, MAX_INPUT);
+  __HAL_TIM_SET_COMPARE(&htim5, TIM_CHANNEL_2, MAX_INPUT);
+  __HAL_TIM_SET_COMPARE(&htim5, TIM_CHANNEL_3, MAX_INPUT);
+  __HAL_TIM_SET_COMPARE(&htim5, TIM_CHANNEL_4, MAX_INPUT);
 }

@@ -2,6 +2,7 @@
 #define _ENCODER_H_
 #include "main.h"
 
-void GetEncoderData();
+void EncoderCount();
+void UpdateEncoderData();
 
 #endif // _ENCODER_H_
