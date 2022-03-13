@@ -25,7 +25,7 @@ void EncoderCount(){
   } else {
     countr = (int16_t)enc_buff_r;
   }
-  sw_cnt += countr;
+  sw_cnt += countr * 11 / 43;
 }
 
 void UpdateEncoderData()

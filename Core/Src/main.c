@@ -126,7 +126,7 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
           // DetectFrontWall();
           // Back();
           // FrontWallCorrection();
-          // Turn();
+          Turn();
         }
 
         if (cnt1kHz == 0)

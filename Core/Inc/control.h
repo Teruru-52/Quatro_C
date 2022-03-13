@@ -2,8 +2,13 @@
 #define _CONTROL_H_
 #include "main.h"
 
-#define YAW_PID_KP 10.0f
-#define YAW_PID_KI 4.0f
+// Party Trick
+// #define YAW_PID_KP 2.0f
+// #define YAW_PID_KI 4.0f
+// #define YAW_PID_KD 0.5f
+
+#define YAW_PID_KP 4.0f
+#define YAW_PID_KI 1.0f
 #define YAW_PID_KD 0.5f
 
 #define GYRO_PID_KP  18.2f

@@ -11,19 +11,19 @@ void ModeSelect(){
     if (!flag_int)
     {
         EncoderCount();
-        sw_cnt = sw_cnt % 40000;
+        sw_cnt = sw_cnt % 16384;
 
-        if (sw_cnt <= 10000)
+        if (sw_cnt <= 4096)
         {
             HAL_GPIO_WritePin(GPIOC, GPIO_PIN_8, GPIO_PIN_RESET);
             HAL_GPIO_WritePin(GPIOC, GPIO_PIN_9, GPIO_PIN_RESET);
         }
-        else if (sw_cnt <= 20000)
+        else if (sw_cnt <= 8192)
         {
             HAL_GPIO_WritePin(GPIOC, GPIO_PIN_8, GPIO_PIN_SET);
             HAL_GPIO_WritePin(GPIOC, GPIO_PIN_9, GPIO_PIN_RESET);
         }
-        else if (sw_cnt <= 30000)
+        else if (sw_cnt <= 12288)
         {
             HAL_GPIO_WritePin(GPIOC, GPIO_PIN_8, GPIO_PIN_RESET);
             HAL_GPIO_WritePin(GPIOC, GPIO_PIN_9, GPIO_PIN_SET);
@@ -34,7 +34,6 @@ void ModeSelect(){
             HAL_GPIO_WritePin(GPIOC, GPIO_PIN_9, GPIO_PIN_SET);
         }
         StartMovement();
-        // printf("%d \r\n", sw_cnt);
     }
 }
 
@@ -72,4 +71,5 @@ void ExecuteLogger(){
     // printf("%ld, %ld, %ld, %ld \r\n", ir_fl, ir_fr, ir_bl, ir_br);
     // printf("%f, %f \r\n", velocityL, velocityR);
     // printf("%f \r\n", bat_vol);
+    printf("%d \r\n", sw_cnt);
 }
