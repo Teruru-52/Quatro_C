@@ -42,6 +42,7 @@ extern int flag_sensor;
 extern bool flag_int;
 extern int main_mode;
 extern int flag_mode;
+extern int cnt_turn;
 
 typedef struct
 {
@@ -57,7 +58,9 @@ float VelocityControl(Control_Typedef *pid3);
 void PositionControl();
 void PartyTrick();
 void GoStraight();
-void Turn();
+void TurnLeft(Control_Typedef *pid2);
+void TurnRight(Control_Typedef *pid2);
+void Uturn(Control_Typedef *pid2);
 void DetectFrontWall();
 void FrontWallCorrection();
 void Back();

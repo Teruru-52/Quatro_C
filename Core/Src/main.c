@@ -66,8 +66,9 @@ int cnt = 0;
 int cnt16kHz = 0;
 int cnt1kHz = 0;
 int cnt100Hz = 0;
-// int flag_turn = 0;
-int cnt_mode = 0;
+int cnt_turn = 0;
+// int cnt_mode = 0;
+float data[300];
 
 extern float yaw, gz;
 extern uint32_t ir_fl, ir_fr, ir_bl, ir_br;
@@ -87,57 +88,38 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
       cnt16kHz = (cnt16kHz + 1) % 16;
       if (cnt16kHz == 0) //割込み1kHz
       {
-        cnt++;
         cnt1kHz = (cnt1kHz + 1) % 1000;
-        if (cnt >= 20000) // cnt 20秒で停止
+        UpdateIRSensorData();
+        UpdateGyroData();
+        UpdateEncoderData();
+
+        if (flag_mode == 0)
         {
-          flag_int = false;
-          MotorStop();
+          if (cnt_turn <= 300)
+          {
+            // TurnLeft(&pid_2);
+            // TurnRight(&pid_2);
+            Uturn(&pid_2);
+            data[cnt_turn] = gz;
+            cnt_turn++;
+          }
+          else
+          {
+            main_mode = 1;
+            MotorStop();
+            flag_int = false;
+          }
         }
-        else
-        {
-          UpdateIRSensorData();
-          UpdateGyroData();
-          UpdateEncoderData();
+      }
 
-          // if(flag_mode == 0){
-          //   GoStraight();
-          //   DetectFrontWall();
-          // }
-          // else if (flag_mode == 1){
-          //   Turn();
-          //   cnt_mode++;
-          //   if (cnt_mode > 1000){
-          //     cnt_mode = 0;
-          //     MotorStop();
-          //     main_mode = 2;
-          //     flag_int = false;
-          //   }
-          // }
-          // else if (flag_mode == 2){
-          //   Back();
-          //   main_mode = 3;
-          //   flag_int = false;
-          // }
+      if (cnt1kHz == 0)
+        HAL_GPIO_WritePin(GPIOC, GPIO_PIN_8, GPIO_PIN_SET);
+      else
+        HAL_GPIO_WritePin(GPIOC, GPIO_PIN_8, GPIO_PIN_RESET);
 
-          // PartyTrick();
-          // GoStraight();
-          // PositionControl();
-          // DetectFrontWall();
-          // Back();
-          // FrontWallCorrection();
-          Turn();
-        }
-
-        if (cnt1kHz == 0)
-          HAL_GPIO_WritePin(GPIOC, GPIO_PIN_8, GPIO_PIN_SET);
-        else
-          HAL_GPIO_WritePin(GPIOC, GPIO_PIN_8, GPIO_PIN_RESET);
-
-        if (cnt1kHz % 200 == 0)
-        {
-          ExecuteLogger();
-        }
+      if (cnt1kHz % 200 == 0)
+      {
+        ExecuteLogger();
       }
     }
   }
@@ -213,21 +195,14 @@ int main(void)
     if(main_mode == 0){
       ModeSelect();
     }
-    // else if(main_mode == 1){
-    //   HAL_Delay(500);
-    //   flag_mode = 1;
-    //   flag_int = true;
-    // }
-    // else if(main_mode == 2){
-    //   HAL_Delay(300);
-    //   flag_mode = 2;
-    //   flag_int = true;
-    // }
-    // else if(main_mode == 3){
-    //   HAL_Delay(300);
-    //   MotorStop();
-    //   main_mode = 100;
-    // }
+    else if (main_mode == 1){
+      if (HAL_GPIO_ReadPin(GPIOB, GPIO_PIN_2) == 0){
+        for(int i = 0; i < cnt_turn; i++){
+          printf("%f \r\n", data[i]);
+        }
+        printf("%f \r\n", yaw);
+      }
+    }
   }
   /* USER CODE END 3 */
 }
