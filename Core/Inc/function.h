@@ -7,6 +7,7 @@
 #include "ir_sensor.h"
 #include "encoder.h"
 
+extern float gz_nonfil;
 extern bool flag_int;
 extern int main_mode;
 extern Control_Typedef pid_1, pid_2, pid_3;

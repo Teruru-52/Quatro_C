@@ -24,7 +24,7 @@
 
 typedef struct
 {
-  float a1, a2, b0, b1, b2;
+  float a1, a2, a3, b0, b1, b2, b3;
 } IIR_Coeff;
 
 uint8_t read_byte(uint8_t reg);
