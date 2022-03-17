@@ -16,6 +16,13 @@ static float pos = 0.0f;
 float u_left, u_right;
 float u_turn;
 
+float v_ref = 0.0f;
+float a_ref = 0.0f;
+float j_ref = 0.0f;
+float jm = 3500.0f;
+float am = jm * 0.03f;
+float vm = 7.35f;
+
 Control_Typedef pid_1, pid_2, pid_3;
 
 // static float dt_recip;  // 1/sampling time
@@ -155,6 +162,47 @@ void GoStraight()
   __HAL_TIM_SET_COMPARE(&htim5, TIM_CHANNEL_2, MAX_INPUT);
   __HAL_TIM_SET_COMPARE(&htim5, TIM_CHANNEL_3, MAX_INPUT);
   __HAL_TIM_SET_COMPARE(&htim5, TIM_CHANNEL_4, MAX_INPUT - u_right);
+}
+
+void UpdateReference(){
+  if (cnt_turn <= 30) {
+    v_ref += 0.5f * jm * (cnt_turn * CONTROL_PERIOD) * (cnt_turn * CONTROL_PERIOD);
+    a_ref = jm * cnt_turn * CONTROL_PERIOD;
+    j_ref = jm;
+  }
+  else if (cnt_turn <= 70) {
+    v_ref += 0.5f * jm * 0.03f * 0.03f + am * (cnt_turn - 30) * CONTROL_PERIOD;
+    a_ref = am;
+    j_ref = 0.0f;
+  }
+  else if (cnt_turn <= 100) {
+    v_ref += (vm - 0.5 * jm * (100 - cnt_turn) * CONTROL_PERIOD);
+    a_ref = - jm * (cnt_turn - 70) * CONTROL_PERIOD;
+    j_ref = - jm;
+  }
+  else if (cnt_turn <= 213) {
+    v_ref = vm;
+    a_ref = 0.0f;
+    j_ref = 0.0f;
+  }
+  else if (cnt_turn <= 243) {
+    v_ref = vm - 0.5f * jm * ((cnt_turn - 213) * CONTROL_PERIOD) * ((cnt_turn - 213) * CONTROL_PERIOD);
+    a_ref = - jm * (cnt_turn - 213) * CONTROL_PERIOD;
+    j_ref = - jm;
+  }
+  else if (cnt_turn <= 283) {
+    v_ref -= am * (cnt_turn - 243) * CONTROL_PERIOD;
+    a_ref = - am;
+    j_ref = 0.0f;
+  }
+  else if (cnt_turn <= 313){
+    v_ref -= 0.5 * jm * (cnt_turn - 283) * CONTROL_PERIOD * (cnt_turn - 283) * CONTROL_PERIOD;
+    a_ref = - am + jm * (cnt_turn - 283);
+    j_ref = jm;
+  }
+  if (cnt_turn == 313){
+    flag_int = false;
+  }
 }
 
 void DetectFrontWall()

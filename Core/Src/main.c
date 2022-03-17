@@ -66,16 +66,25 @@ int cnt = 0;
 int cnt16kHz = 0;
 int cnt1kHz = 0;
 int cnt100Hz = 0;
-int cnt_turn = 0;
+int cnt_gyro = 0;
 // int cnt_mode = 0;
-float data[300];
+float data1[126];
+float data2[126];
 
-extern float yaw, gz;
+extern float yaw, gz, gz_nonfil;;
 extern uint32_t ir_fl, ir_fr, ir_bl, ir_br;
 extern float bat_vol;
 extern float velocityL, velocityR, velocity;
 extern float u_left, u_right;
 extern float u_turn;
+
+extern float v_ref;
+extern float a_ref;
+extern float j_ref;
+
+float ref1[314];
+float ref2[314];
+float ref3[314];
 
 void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 {
@@ -95,19 +104,10 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 
         if (flag_mode == 0)
         {
-          if (cnt_turn <= 300)
-          {
-            // TurnLeft(&pid_2);
-            // TurnRight(&pid_2);
-            Uturn(&pid_2);
-            data[cnt_turn] = gz;
-            cnt_turn++;
-          }
-          else
-          {
-            main_mode = 1;
-            MotorStop();
-            flag_int = false;
+          if(cnt_gyro < 126){
+            data1[cnt_gyro] = gz_nonfil;
+            data2[cnt_gyro] = gz;
+            cnt_gyro++;
           }
         }
       }
@@ -119,7 +119,7 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 
       if (cnt1kHz % 200 == 0)
       {
-        ExecuteLogger();
+        // ExecuteLogger();
       }
     }
   }
@@ -127,9 +127,9 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 /* USER CODE END 0 */
 
 /**
- * @brief  The application entry point.
- * @retval int
- */
+  * @brief  The application entry point.
+  * @retval int
+  */
 int main(void)
 {
   /* USER CODE BEGIN 1 */
@@ -197,10 +197,13 @@ int main(void)
     }
     else if (main_mode == 1){
       if (HAL_GPIO_ReadPin(GPIOB, GPIO_PIN_2) == 0){
-        for(int i = 0; i < cnt_turn; i++){
-          printf("%f \r\n", data[i]);
+        for(int i = 0; i < 126; i++){
+          printf("%f \r\n", data1[i]);
         }
-        printf("%f \r\n", yaw);
+        printf("------------------------ \r\n");
+        for(int i = 0; i < 126; i++){
+          printf("%f \r\n", data2[i]);
+        }
       }
     }
   }
@@ -208,21 +211,21 @@ int main(void)
 }
 
 /**
- * @brief System Clock Configuration
- * @retval None
- */
+  * @brief System Clock Configuration
+  * @retval None
+  */
 void SystemClock_Config(void)
 {
   RCC_OscInitTypeDef RCC_OscInitStruct = {0};
   RCC_ClkInitTypeDef RCC_ClkInitStruct = {0};
 
   /** Configure the main internal regulator output voltage
-   */
+  */
   __HAL_RCC_PWR_CLK_ENABLE();
   __HAL_PWR_VOLTAGESCALING_CONFIG(PWR_REGULATOR_VOLTAGE_SCALE1);
   /** Initializes the RCC Oscillators according to the specified parameters
-   * in the RCC_OscInitTypeDef structure.
-   */
+  * in the RCC_OscInitTypeDef structure.
+  */
   RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_HSI;
   RCC_OscInitStruct.HSIState = RCC_HSI_ON;
   RCC_OscInitStruct.HSICalibrationValue = RCC_HSICALIBRATION_DEFAULT;
@@ -237,8 +240,9 @@ void SystemClock_Config(void)
     Error_Handler();
   }
   /** Initializes the CPU, AHB and APB buses clocks
-   */
-  RCC_ClkInitStruct.ClockType = RCC_CLOCKTYPE_HCLK | RCC_CLOCKTYPE_SYSCLK | RCC_CLOCKTYPE_PCLK1 | RCC_CLOCKTYPE_PCLK2;
+  */
+  RCC_ClkInitStruct.ClockType = RCC_CLOCKTYPE_HCLK|RCC_CLOCKTYPE_SYSCLK
+                              |RCC_CLOCKTYPE_PCLK1|RCC_CLOCKTYPE_PCLK2;
   RCC_ClkInitStruct.SYSCLKSource = RCC_SYSCLKSOURCE_PLLCLK;
   RCC_ClkInitStruct.AHBCLKDivider = RCC_SYSCLK_DIV2;
   RCC_ClkInitStruct.APB1CLKDivider = RCC_HCLK_DIV2;
@@ -255,9 +259,9 @@ void SystemClock_Config(void)
 /* USER CODE END 4 */
 
 /**
- * @brief  This function is executed in case of error occurrence.
- * @retval None
- */
+  * @brief  This function is executed in case of error occurrence.
+  * @retval None
+  */
 void Error_Handler(void)
 {
   /* USER CODE BEGIN Error_Handler_Debug */
@@ -269,14 +273,14 @@ void Error_Handler(void)
   /* USER CODE END Error_Handler_Debug */
 }
 
-#ifdef USE_FULL_ASSERT
+#ifdef  USE_FULL_ASSERT
 /**
- * @brief  Reports the name of the source file and the source line number
- *         where the assert_param error has occurred.
- * @param  file: pointer to the source file name
- * @param  line: assert_param error line source number
- * @retval None
- */
+  * @brief  Reports the name of the source file and the source line number
+  *         where the assert_param error has occurred.
+  * @param  file: pointer to the source file name
+  * @param  line: assert_param error line source number
+  * @retval None
+  */
 void assert_failed(uint8_t *file, uint32_t line)
 {
   /* USER CODE BEGIN 6 */

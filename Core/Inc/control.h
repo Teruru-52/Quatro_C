@@ -58,6 +58,7 @@ float VelocityControl(Control_Typedef *pid3);
 void PositionControl();
 void PartyTrick();
 void GoStraight();
+void UpdateReference();
 void TurnLeft(Control_Typedef *pid2);
 void TurnRight(Control_Typedef *pid2);
 void Uturn(Control_Typedef *pid2);
