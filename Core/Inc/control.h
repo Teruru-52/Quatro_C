@@ -7,12 +7,12 @@
 // #define YAW_PID_KI 4.0f
 // #define YAW_PID_KD 0.5f
 
-#define YAW_PID_KP 4.0f
-#define YAW_PID_KI 1.0f
+#define YAW_PID_KP 100.0f
+#define YAW_PID_KI 20.0f
 #define YAW_PID_KD 0.5f
 
-#define GYRO_PID_KP  18.2f
-#define GYRO_PID_KI  332.0f
+#define GYRO_PID_KP  18.16f
+#define GYRO_PID_KI  332.3f
 #define GYRO_PID_KD  -0.072f
 #define D_FILTER_COFF 0.967f
 
@@ -42,7 +42,6 @@ extern int flag_sensor;
 extern bool flag_int;
 extern int main_mode;
 extern int flag_mode;
-extern int cnt_turn;
 
 typedef struct
 {

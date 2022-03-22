@@ -67,6 +67,7 @@ int cnt16kHz = 0;
 int cnt1kHz = 0;
 int cnt100Hz = 0;
 int cnt_gyro = 0;
+extern float cnt_turn;
 // int cnt_mode = 0;
 float data1[126];
 float data2[126];
@@ -82,9 +83,12 @@ extern float v_ref;
 extern float a_ref;
 extern float j_ref;
 
-float ref1[314];
-float ref2[314];
-float ref3[314];
+float v[700];
+float ref1[700];
+float ref2[700];
+float ref3[700];
+
+int id = 0;
 
 void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 {
@@ -104,11 +108,19 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 
         if (flag_mode == 0)
         {
-          if(cnt_gyro < 126){
-            data1[cnt_gyro] = gz_nonfil;
-            data2[cnt_gyro] = gz;
-            cnt_gyro++;
+          // TurnLeft(&pid_2);
+          // TurnRight(&pid_2);
+          Uturn(&pid_2);
+          v[id] = gz;
+          ref1[id] = v_ref;
+          ref2[id] = a_ref;
+          ref3[id] = j_ref;
+          if(id == 526){
+            MotorStop();
+            flag_int = false;
           }
+
+          id++;
         }
       }
 
@@ -197,13 +209,20 @@ int main(void)
     }
     else if (main_mode == 1){
       if (HAL_GPIO_ReadPin(GPIOB, GPIO_PIN_2) == 0){
-        for(int i = 0; i < 126; i++){
-          printf("%f \r\n", data1[i]);
+        for(int i = 0; i < 526; i++){
+          printf("%f \r\n", ref1[i]);
         }
-        printf("------------------------ \r\n");
-        for(int i = 0; i < 126; i++){
-          printf("%f \r\n", data2[i]);
+        printf("------------------------------------------ \r\n");
+        for(int i = 0; i < 526; i++){
+          printf("%f \r\n", v[i]);
         }
+        // for(int i = 0; i < 314; i++){
+        //   printf("%f \r\n", ref2[i]);
+        // }
+        // printf("------------------------------------------ \r\n");
+        // for(int i = 0; i < 314; i++){
+        //   printf("%f \r\n", ref3[i]);
+        // }
       }
     }
   }

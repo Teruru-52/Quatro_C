@@ -9,6 +9,12 @@ static float pre_error3;
 static float sum_error3 = 0.0f;
 static float pre_deriv3;
 static float filtered_ref = 0.0f;
+static float filtered_v_ref = 0.0f;
+static float filtered_a_ref = 0.0f;
+
+static float dt1 = 0.03f;
+static float dt2 = 0.04f;
+static float dt3;
 
 static const float radious = 0.0125f;
 static float pos = 0.0f;
@@ -19,9 +25,10 @@ float u_turn;
 float v_ref = 0.0f;
 float a_ref = 0.0f;
 float j_ref = 0.0f;
-float jm = 3500.0f;
-float am = jm * 0.03f;
-float vm = 7.35f;
+static const float jm = 3500.0f;
+static const float am = jm * 0.03f;
+static const float vm = 7.35f;
+float cnt_turn = 0.0f;
 
 Control_Typedef pid_1, pid_2, pid_3;
 
@@ -33,7 +40,7 @@ void PIDControlInit(Control_Typedef *pid1, Control_Typedef *pid2, Control_Typede
   pid1->kp = YAW_PID_KP;
   pid1->ki = YAW_PID_KI;
   pid1->kd = YAW_PID_KD;
-  pid1->ref = M_PI;
+  pid1->ref = 0.0f;
   // Angular Velocity Control
   pid2->kp = GYRO_PID_KP;
   pid2->ki = GYRO_PID_KI;
@@ -63,31 +70,30 @@ void SetReference(Control_Typedef *pid1, float ref_ang)
 
 float AngleControl(Control_Typedef *pid1)
 {
-  float error, deriv, vel_ref;
+  float error, deriv, u_ang1;
   error = pid1->ref - yaw;
   sum_error += error * CONTROL_PERIOD;
   deriv = (error - pre_error) / CONTROL_PERIOD;
-  vel_ref = pid1->kp * error + pid1->ki * sum_error + pid1->kd * deriv;
+  u_ang1 = pid1->kp * error + pid1->ki * sum_error + pid1->kd * deriv;
 
   pre_error = error;
 
-  return vel_ref;
+  return u_ang1;
 }
 
 float AngularVelocityControl(Control_Typedef *pid2)
 {
-  float error2, deriv2, u_ang;
-  pid2->ref = AngleControl(&pid_1);
+  float error2, deriv2, u_ang2;
   error2 = pid2->ref - gz;
   sum_error2 += error2 * CONTROL_PERIOD;
   deriv2 = (error2 - pre_error2) / CONTROL_PERIOD;
   deriv2 = D_FILTER_COFF * pre_deriv2 + (1.0f - D_FILTER_COFF) * deriv2;
-  u_ang = pid2->kp * error2 + pid2->ki * sum_error2 + pid2->kd * deriv2;
+  u_ang2 = pid2->kp * error2 + pid2->ki * sum_error2 + pid2->kd * deriv2;
 
   pre_error2 = error2;
   pre_deriv2 = deriv2;
 
-  return u_ang;
+  return u_ang2;
 }
 
 float VelocityControl(Control_Typedef *pid3)
@@ -116,8 +122,7 @@ void PositionControl(){
 void PartyTrick()
 {
   float u_ang;
-  u_ang = AngularVelocityControl(&pid_2);
-  u_turn = u_ang;
+  u_ang = AngleControl(&pid_1) + AngularVelocityControl(&pid_2);
 
   if (u_ang >= MAX_INPUT)
     u_ang = MAX_INPUT;
@@ -165,44 +170,47 @@ void GoStraight()
 }
 
 void UpdateReference(){
-  if (cnt_turn <= 30) {
-    v_ref += 0.5f * jm * (cnt_turn * CONTROL_PERIOD) * (cnt_turn * CONTROL_PERIOD);
-    a_ref = jm * cnt_turn * CONTROL_PERIOD;
+  if (cnt_turn <= dt1) {
+    v_ref = 0.5f * jm * cnt_turn * cnt_turn;
+    a_ref = jm * cnt_turn;
     j_ref = jm;
   }
-  else if (cnt_turn <= 70) {
-    v_ref += 0.5f * jm * 0.03f * 0.03f + am * (cnt_turn - 30) * CONTROL_PERIOD;
+  else if (cnt_turn <= dt1 + dt2) {
+    v_ref = 0.5f * jm * dt1 * dt1 + am * (cnt_turn - 0.030f);
     a_ref = am;
     j_ref = 0.0f;
   }
-  else if (cnt_turn <= 100) {
-    v_ref += (vm - 0.5 * jm * (100 - cnt_turn) * CONTROL_PERIOD);
-    a_ref = - jm * (cnt_turn - 70) * CONTROL_PERIOD;
+  else if (cnt_turn <= 2 * dt1 + dt2) {
+    v_ref = vm - 0.5f * jm * (0.1f - cnt_turn) * (0.1f - cnt_turn);
+    a_ref = am - jm * (cnt_turn - 0.07f);
     j_ref = - jm;
   }
-  else if (cnt_turn <= 213) {
+  else if (cnt_turn <= 2 * dt1 + dt2 + dt3) {
     v_ref = vm;
     a_ref = 0.0f;
     j_ref = 0.0f;
   }
-  else if (cnt_turn <= 243) {
-    v_ref = vm - 0.5f * jm * ((cnt_turn - 213) * CONTROL_PERIOD) * ((cnt_turn - 213) * CONTROL_PERIOD);
-    a_ref = - jm * (cnt_turn - 213) * CONTROL_PERIOD;
+  else if (cnt_turn <= 3 * dt1 + dt2 + dt3) {
+    v_ref = vm - 0.5f * jm * (cnt_turn - 2 * dt1 - dt2 - dt3) * (cnt_turn - 2 * dt1 - dt2 - dt3);
+    a_ref = - jm * (cnt_turn - 2 * dt1 - dt2 - dt3);
     j_ref = - jm;
   }
-  else if (cnt_turn <= 283) {
-    v_ref -= am * (cnt_turn - 243) * CONTROL_PERIOD;
+  else if (cnt_turn <= 3 * dt1 + 2 * dt2 + dt3) {
+    v_ref = vm - 0.5f * jm * dt1 * dt1 - am * (cnt_turn - 3 * dt1 - dt2 - dt3);
     a_ref = - am;
     j_ref = 0.0f;
   }
-  else if (cnt_turn <= 313){
-    v_ref -= 0.5 * jm * (cnt_turn - 283) * CONTROL_PERIOD * (cnt_turn - 283) * CONTROL_PERIOD;
-    a_ref = - am + jm * (cnt_turn - 283);
+  else if (cnt_turn <= 4 * dt1 + 2 * dt2 + dt3){
+    v_ref = 0.5f * jm * (cnt_turn - 4 * dt1 - 2 * dt2 - dt3) * (cnt_turn - 4 * dt1 - 2 * dt2 - dt3);
+    a_ref = - am + jm * (cnt_turn - 3 * dt1 - dt2 - dt3);
     j_ref = jm;
   }
-  if (cnt_turn == 313){
+  if (cnt_turn >= 4 * dt1 + 2 * dt2 + dt3){
     flag_int = false;
   }
+  // filtered_v_ref = 0.2 * filtered_v_ref + (1.0 - 0.2) * v_ref;
+  // filtered_a_ref = 0.2 * filtered_a_ref + (1.0 - 0.2) * a_ref;
+  cnt_turn += 0.001f;
 }
 
 void DetectFrontWall()
@@ -251,23 +259,21 @@ void FrontWallCorrection(){
 
 void TurnLeft(Control_Typedef *pid2)
 {
+  dt3 = 0.113f;
   float error2, deriv2, u_ang, u_fb, u_ff;
-  if(cnt_turn <= 100){
-    pid2->ref = 7.854 / 0.1 * cnt_turn * CONTROL_PERIOD;
-  }
-  else if (cnt_turn > 100 && cnt_turn <= 200){
-    pid2->ref = 7.854;
-  }
-  else{
-    pid2->ref = 7.854 - 7.854 / 0.1 * (cnt_turn - 200) * CONTROL_PERIOD;;
-  }
-  // filtered_ref = 0.75 * filtered_ref + (1.0 - 0.75) * pid2->ref;
-  error2 = pid2->ref - gz;
+  UpdateReference();
+
+  error2 = v_ref - gz;
   sum_error2 += error2 * CONTROL_PERIOD;
   deriv2 = (error2 - pre_error2) / CONTROL_PERIOD;
   deriv2 = D_FILTER_COFF * pre_deriv2 + (1.0f - D_FILTER_COFF) * deriv2;
   u_fb = pid2->kp * error2 + pid2->ki * sum_error2 + pid2->kd * deriv2;
-  u_ff = 15 * pid2->ref;
+  // u_ff = (0.109f * a_ref + v_ref) / 0.07366f;
+  u_ff = v_ref / 0.07366f;
+  // u_ff = (3.2263 * j_ref + 3.10658 * a_ref + v_ref) / 0.11081;
+  // u_ff = v_ref / 0.11081;
+  // filtered_ref = 0.5 * filtered_ref + (1.0 - 0.5) * (0.20658 * a_ref + v_ref);
+  // u_ff = filtered_ref / 0.11081;
   u_ang = u_fb + u_ff;
 
   pre_error2 = error2;
@@ -295,23 +301,17 @@ void TurnLeft(Control_Typedef *pid2)
 }
 
 void TurnRight(Control_Typedef *pid2){
+  dt3 = 0.113f;
   float error2, deriv2, u_ang, u_fb, u_ff;
-  if(cnt_turn <= 100){
-    pid2->ref = - 7.854 / 0.1 * cnt_turn * CONTROL_PERIOD;
-  }
-  else if (cnt_turn > 100 && cnt_turn <= 200){
-    pid2->ref = - 7.854;
-  }
-  else{
-    pid2->ref = - 7.854 + 7.854 / 0.1 * (cnt_turn - 200) * CONTROL_PERIOD;;
-  }
-  // filtered_ref = 0.75 * filtered_ref + (1.0 - 0.75) * pid2->ref;
-  error2 = pid2->ref - gz;
+  UpdateReference();
+
+  error2 = - v_ref - gz;
   sum_error2 += error2 * CONTROL_PERIOD;
   deriv2 = (error2 - pre_error2) / CONTROL_PERIOD;
   deriv2 = D_FILTER_COFF * pre_deriv2 + (1.0f - D_FILTER_COFF) * deriv2;
   u_fb = pid2->kp * error2 + pid2->ki * sum_error2 + pid2->kd * deriv2;
-  u_ff = 15 * pid2->ref;
+  u_ff = (- 0.109f * a_ref - v_ref) / 0.07366f;
+  // u_ff = - v_ref / 0.07366f;
   u_ang = u_fb + u_ff;
 
   pre_error2 = error2;
@@ -339,23 +339,17 @@ void TurnRight(Control_Typedef *pid2){
 }
 
 void Uturn(Control_Typedef *pid2){
+  dt3 = 0.326f;
   float error2, deriv2, u_ang, u_fb, u_ff;
-  if(cnt_turn <= 100){
-    pid2->ref = 2 * 7.854 / 0.1 * cnt_turn * CONTROL_PERIOD;
-  }
-  else if (cnt_turn > 100 && cnt_turn <= 200){
-    pid2->ref = 2 * 7.854;
-  }
-  else{
-    pid2->ref = 2 * 7.854 - 2 * 7.854 / 0.1 * (cnt_turn - 200) * CONTROL_PERIOD;;
-  }
-  // filtered_ref = 0.75 * filtered_ref + (1.0 - 0.75) * pid2->ref;
-  error2 = pid2->ref - gz;
+  UpdateReference();
+
+  error2 = v_ref - gz;
   sum_error2 += error2 * CONTROL_PERIOD;
   deriv2 = (error2 - pre_error2) / CONTROL_PERIOD;
   deriv2 = D_FILTER_COFF * pre_deriv2 + (1.0f - D_FILTER_COFF) * deriv2;
   u_fb = pid2->kp * error2 + pid2->ki * sum_error2 + pid2->kd * deriv2;
-  u_ff = 2 * pid2->ref;
+  u_ff = (0.109f * a_ref + v_ref) / 0.07366f;
+  // u_ff = v_ref / 0.07366f;
   u_ang = u_fb + u_ff;
 
   pre_error2 = error2;

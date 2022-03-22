@@ -72,5 +72,6 @@ void ExecuteLogger(){
     // printf("%f, %f \r\n", velocityL, velocityR);
     // printf("%f \r\n", bat_vol);
     // printf("%d \r\n", sw_cnt);
-    printf("%f, %f \r\n", gz_nonfil, gz);
+    // printf("%f, %f \r\n", gz_nonfil, gz);
+
 }
