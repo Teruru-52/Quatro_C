@@ -343,6 +343,11 @@ void Uturn(Control_Typedef *pid2){
   float error2, deriv2, u_ang, u_fb, u_ff;
   UpdateReference();
 
+  // if (cnt_turn == 2 * dt1 + dt2 + dt3){
+  //   pre_error2 = 0;
+  //   pre_deriv2 = 0;
+  //   sum_error2 = 0;
+  // }
   error2 = v_ref - gz;
   sum_error2 += error2 * CONTROL_PERIOD;
   deriv2 = (error2 - pre_error2) / CONTROL_PERIOD;

@@ -11,8 +11,10 @@
 #define YAW_PID_KI 20.0f
 #define YAW_PID_KD 0.5f
 
-#define GYRO_PID_KP  18.16f
-#define GYRO_PID_KI  332.3f
+// #define GYRO_PID_KP  18.16f
+// #define GYRO_PID_KI  332.3f
+#define GYRO_PID_KP  100.0f
+#define GYRO_PID_KI  300.0f
 #define GYRO_PID_KD  -0.072f
 #define D_FILTER_COFF 0.967f
 
