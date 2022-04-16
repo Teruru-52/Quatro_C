@@ -19,7 +19,7 @@ float u_turn;
 float v_ref = 0.0f;
 float a_ref = 0.0f;
 float j_ref = 0.0f;
-float jm = 3500.0f;
+const float jm = 3500.0f;
 float am = jm * 0.03f;
 float vm = 7.35f;
 

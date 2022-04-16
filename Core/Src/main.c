@@ -68,8 +68,8 @@ int cnt1kHz = 0;
 int cnt100Hz = 0;
 int cnt_gyro = 0;
 // int cnt_mode = 0;
-float data1[126];
-float data2[126];
+float data1[500];
+float data2[500];
 
 extern float yaw, gz, gz_nonfil;;
 extern uint32_t ir_fl, ir_fr, ir_bl, ir_br;
@@ -104,7 +104,7 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 
         if (flag_mode == 0)
         {
-          if(cnt_gyro < 126){
+          if(cnt_gyro < 500){
             data1[cnt_gyro] = gz_nonfil;
             data2[cnt_gyro] = gz;
             cnt_gyro++;
@@ -197,11 +197,11 @@ int main(void)
     }
     else if (main_mode == 1){
       if (HAL_GPIO_ReadPin(GPIOB, GPIO_PIN_2) == 0){
-        for(int i = 0; i < 126; i++){
+        for(int i = 0; i < 500; i++){
           printf("%f \r\n", data1[i]);
         }
-        printf("------------------------ \r\n");
-        for(int i = 0; i < 126; i++){
+        printf("------------------------------------------------ \r\n");
+        for(int i = 0; i < 500; i++){
           printf("%f \r\n", data2[i]);
         }
       }
