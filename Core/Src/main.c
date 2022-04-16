@@ -108,14 +108,14 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 
         if (flag_mode == 0)
         {
-          // TurnLeft(&pid_2);
+          TurnLeft(&pid_2);
           // TurnRight(&pid_2);
-          Uturn(&pid_2);
+          // Uturn(&pid_2);
           v[id] = gz;
           ref1[id] = v_ref;
           ref2[id] = a_ref;
           ref3[id] = j_ref;
-          if(id == 526){
+          if(id >= 526){
             MotorStop();
             flag_int = false;
           }

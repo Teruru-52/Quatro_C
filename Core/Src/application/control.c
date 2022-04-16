@@ -268,8 +268,8 @@ void TurnLeft(Control_Typedef *pid2)
   deriv2 = (error2 - pre_error2) / CONTROL_PERIOD;
   deriv2 = D_FILTER_COFF * pre_deriv2 + (1.0f - D_FILTER_COFF) * deriv2;
   u_fb = pid2->kp * error2 + pid2->ki * sum_error2 + pid2->kd * deriv2;
-  // u_ff = (0.109f * a_ref + v_ref) / 0.07366f;
-  u_ff = v_ref / 0.07366f;
+  u_ff = (0.109f * a_ref + v_ref) / 0.07366f;
+  // u_ff = v_ref / 0.07366f;
   // u_ff = (3.2263 * j_ref + 3.10658 * a_ref + v_ref) / 0.11081;
   // u_ff = v_ref / 0.11081;
   // filtered_ref = 0.5 * filtered_ref + (1.0 - 0.5) * (0.20658 * a_ref + v_ref);
