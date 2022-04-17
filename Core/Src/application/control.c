@@ -384,7 +384,7 @@ void Uturn(Control_Typedef *pid2){
 
 void Identification()
 {
-  u_iden = (int)(1000.0f * 2.0f / bat_vol);
+  u_iden = (int)(1000.0f * 3.0f / bat_vol);
   // float u_float = 1000.0f * 2.0f / bat_vol;
   // u_iden = (int16_t)u_float;
 
