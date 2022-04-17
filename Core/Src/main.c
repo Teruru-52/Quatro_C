@@ -109,6 +109,7 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
         if (flag_mode == 0)
         {
           PartyTrick();
+
           // TurnLeft(&pid_2);
           // TurnRight(&pid_2);
           // Uturn(&pid_2);

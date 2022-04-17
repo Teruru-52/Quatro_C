@@ -7,16 +7,17 @@
 // #define YAW_PID_KI 4.0f
 // #define YAW_PID_KD 0.5f
 
-#define YAW_PID_KP 300.0f
-#define YAW_PID_KI 100.0f
+#define YAW_PID_KP 20.0f
+#define YAW_PID_KI 50.0f
 #define YAW_PID_KD 0.5f
 
 // #define GYRO_PID_KP  18.16f
 // #define GYRO_PID_KI  332.3f
-#define GYRO_PID_KP  100.0f
-#define GYRO_PID_KI  300.0f
-#define GYRO_PID_KD  -0.072f
-#define D_FILTER_COFF 0.967f
+#define GYRO_PID_KP  0.734f
+#define GYRO_PID_KI  17.1f
+#define GYRO_PID_KD  -0.00185f
+#define D_FILTER_COFF 0.012f
+#define Tp1 0.095935f
 
 #define VEL_PID_KP 19.72f
 #define VEL_PID_KI 52.0f
