@@ -7,8 +7,8 @@
 // #define YAW_PID_KI 4.0f
 // #define YAW_PID_KD 0.5f
 
-#define YAW_PID_KP 100.0f
-#define YAW_PID_KI 20.0f
+#define YAW_PID_KP 300.0f
+#define YAW_PID_KI 100.0f
 #define YAW_PID_KD 0.5f
 
 // #define GYRO_PID_KP  18.16f
