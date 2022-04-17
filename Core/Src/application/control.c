@@ -21,6 +21,7 @@ static float pos = 0.0f;
 
 float u_left, u_right;
 float u_turn;
+int u_iden = 0;
 
 float v_ref = 0.0f;
 float a_ref = 0.0f;
@@ -380,6 +381,22 @@ void Uturn(Control_Typedef *pid2){
     __HAL_TIM_SET_COMPARE(&htim5, TIM_CHANNEL_4, MAX_INPUT);
   }
 }
+
+void Identification()
+{
+  u_iden = (int)(1000.0f * 2.0f / bat_vol);
+  // float u_float = 1000.0f * 2.0f / bat_vol;
+  // u_iden = (int16_t)u_float;
+
+  if (u_iden >= MAX_INPUT)
+    u_iden = MAX_INPUT;
+
+  __HAL_TIM_SET_COMPARE(&htim5, TIM_CHANNEL_1, MAX_INPUT);
+  __HAL_TIM_SET_COMPARE(&htim5, TIM_CHANNEL_2, MAX_INPUT - u_iden);
+  __HAL_TIM_SET_COMPARE(&htim5, TIM_CHANNEL_3, MAX_INPUT);
+  __HAL_TIM_SET_COMPARE(&htim5, TIM_CHANNEL_4, MAX_INPUT - u_iden);
+}
+
 void Back(){
   __HAL_TIM_SET_COMPARE(&htim5, TIM_CHANNEL_1, MAX_INPUT);
   __HAL_TIM_SET_COMPARE(&htim5, TIM_CHANNEL_2, MAX_INPUT - 100);

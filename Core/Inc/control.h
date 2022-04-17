@@ -65,6 +65,7 @@ void TurnRight(Control_Typedef *pid2);
 void Uturn(Control_Typedef *pid2);
 void DetectFrontWall();
 void FrontWallCorrection();
+void Identification();
 void Back();
 void MotorStop();
 

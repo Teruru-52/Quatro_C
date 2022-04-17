@@ -69,24 +69,14 @@ int cnt100Hz = 0;
 int cnt_gyro = 0;
 extern float cnt_turn;
 // int cnt_mode = 0;
-float data1[126];
-float data2[126];
+float data1[4000];
+int data2[4000];
 
 extern float yaw, gz, gz_nonfil;;
 extern uint32_t ir_fl, ir_fr, ir_bl, ir_br;
 extern float bat_vol;
 extern float velocityL, velocityR, velocity;
-extern float u_left, u_right;
-extern float u_turn;
-
-extern float v_ref;
-extern float a_ref;
-extern float j_ref;
-
-float v[700];
-float ref1[700];
-float ref2[700];
-float ref3[700];
+extern int16_t u_iden; 
 
 int id = 0;
 
@@ -108,18 +98,14 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 
         if (flag_mode == 0)
         {
-          PartyTrick();
-          // TurnLeft(&pid_2);
-          // TurnRight(&pid_2);
-          // Uturn(&pid_2);
-          // v[id] = gz;
-          // ref1[id] = v_ref;
-          // ref2[id] = a_ref;
-          // ref3[id] = j_ref;
-          // if(id >= 526){
-          //   MotorStop();
-          //   flag_int = false;
-          // }
+          Identification();
+          data1[id] = gz;
+          data2[id] = u_iden;
+          if (id >= 3000)
+          { // 3秒で停止
+            MotorStop();
+            flag_int = false;
+          }
 
           id++;
         }
@@ -210,20 +196,13 @@ int main(void)
     }
     else if (main_mode == 1){
       if (HAL_GPIO_ReadPin(GPIOB, GPIO_PIN_2) == 0){
-        for(int i = 0; i < 526; i++){
-          printf("%f \r\n", ref1[i]);
+        for(int i = 0; i < 3000; i++){
+          printf("%f \r\n", data1[i]);
         }
         printf("------------------------------------------ \r\n");
-        for(int i = 0; i < 526; i++){
-          printf("%f \r\n", v[i]);
+        for(int i = 0; i < 3000; i++){
+          printf("%d \r\n", data2[i]);
         }
-        // for(int i = 0; i < 314; i++){
-        //   printf("%f \r\n", ref2[i]);
-        // }
-        // printf("------------------------------------------ \r\n");
-        // for(int i = 0; i < 314; i++){
-        //   printf("%f \r\n", ref3[i]);
-        // }
       }
     }
   }

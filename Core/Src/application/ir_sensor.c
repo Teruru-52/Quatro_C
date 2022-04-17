@@ -32,7 +32,7 @@ void ReadFrontIRSensor()
   ir_fl = dma_f[0];
   ir_fr = dma_f[1];
 
-  bat_vol = (float)dma_f[2] * 3.3 / 4096 * 3;
+  bat_vol = (float)dma_f[2] * 3.3f / 4096.0f * 3.0f;
 }
 
 void ReadBackIRSensor()
