@@ -3,21 +3,16 @@
 #include "main.h"
 
 // Party Trick
-// #define YAW_PID_KP 2.0f
-// #define YAW_PID_KI 4.0f
-// #define YAW_PID_KD 0.5f
+#define YAW_PID_KP 3.0f
+#define YAW_PID_KI 4.0f
+#define YAW_PID_KD 0.05f
 
-#define YAW_PID_KP 20.0f
-#define YAW_PID_KI 50.0f
-#define YAW_PID_KD 0.5f
-
-// #define GYRO_PID_KP  18.16f
-// #define GYRO_PID_KI  332.3f
-#define GYRO_PID_KP  0.734f
-#define GYRO_PID_KI  17.1f
-#define GYRO_PID_KD  -0.00185f
-#define D_FILTER_COFF 0.012f
-#define Tp1 0.095935f
+#define GYRO_PID_KP  0.462f
+#define GYRO_PID_KI  7.78f
+#define GYRO_PID_KD  -0.00218f
+#define D_FILTER_COFF 0.0139f
+#define Kp  11.59f
+#define Tp1 0.13505f
 
 #define VEL_PID_KP 19.72f
 #define VEL_PID_KI 52.0f

@@ -122,25 +122,27 @@ void PositionControl(){
 void PartyTrick()
 {
   float u_ang;
+  int u;
   u_ang = AngleControl(&pid_1) + AngularVelocityControl(&pid_2);
+  u = (int)(1000.0f * u_ang / bat_vol);
 
-  if (u_ang >= MAX_INPUT)
-    u_ang = MAX_INPUT;
-  if (u_ang <= -MAX_INPUT)
-    u_ang = -MAX_INPUT;
+  if (u >= MAX_INPUT)
+    u = MAX_INPUT;
+  if (u <= -MAX_INPUT)
+    u = -MAX_INPUT;
 
-  if (u_ang > 0)
+  if (u > 0)
   {
     __HAL_TIM_SET_COMPARE(&htim5, TIM_CHANNEL_1, MAX_INPUT);
-    __HAL_TIM_SET_COMPARE(&htim5, TIM_CHANNEL_2, MAX_INPUT - u_ang);
+    __HAL_TIM_SET_COMPARE(&htim5, TIM_CHANNEL_2, MAX_INPUT - u);
     __HAL_TIM_SET_COMPARE(&htim5, TIM_CHANNEL_3, MAX_INPUT);
-    __HAL_TIM_SET_COMPARE(&htim5, TIM_CHANNEL_4, MAX_INPUT - u_ang);
+    __HAL_TIM_SET_COMPARE(&htim5, TIM_CHANNEL_4, MAX_INPUT - u);
   }
   else
   {
-    __HAL_TIM_SET_COMPARE(&htim5, TIM_CHANNEL_1, MAX_INPUT + u_ang);
+    __HAL_TIM_SET_COMPARE(&htim5, TIM_CHANNEL_1, MAX_INPUT + u);
     __HAL_TIM_SET_COMPARE(&htim5, TIM_CHANNEL_2, MAX_INPUT);
-    __HAL_TIM_SET_COMPARE(&htim5, TIM_CHANNEL_3, MAX_INPUT + u_ang);
+    __HAL_TIM_SET_COMPARE(&htim5, TIM_CHANNEL_3, MAX_INPUT + u);
     __HAL_TIM_SET_COMPARE(&htim5, TIM_CHANNEL_4, MAX_INPUT);
   }
 }
@@ -261,6 +263,7 @@ void TurnLeft(Control_Typedef *pid2)
 {
   dt3 = 0.113f;
   float error2, deriv2, u_ang, u_fb, u_ff;
+  int u;
   UpdateReference();
 
   error2 = v_ref - gz;
@@ -268,30 +271,31 @@ void TurnLeft(Control_Typedef *pid2)
   deriv2 = (error2 - pre_error2) / CONTROL_PERIOD;
   deriv2 = D_FILTER_COFF * pre_deriv2 + (1.0f - D_FILTER_COFF) * deriv2;
   u_fb = pid2->kp * error2 + pid2->ki * sum_error2 + pid2->kd * deriv2;
-  u_ff = (Tp1 * a_ref + v_ref) / GYRO_PID_KP;
-  // u_ff = v_ref / GYRO_PID_KP;
+  u_ff = (Tp1 * a_ref + v_ref) / Kp;
+  // u_ff = v_ref / Kp;
   u_ang = u_fb + u_ff;
+  u = (int)(1000.0f * u_ang / bat_vol);
 
   pre_error2 = error2;
   pre_deriv2 = deriv2;
 
-  if (u_ang >= MAX_INPUT)
-    u_ang = MAX_INPUT;
-  if (u_ang <= -MAX_INPUT)
-    u_ang = -MAX_INPUT;
+  if (u >= MAX_INPUT)
+    u = MAX_INPUT;
+  if (u <= -MAX_INPUT)
+    u = -MAX_INPUT;
 
-  if (u_ang > 0)
+  if (u > 0)
   {
     __HAL_TIM_SET_COMPARE(&htim5, TIM_CHANNEL_1, MAX_INPUT);
-    __HAL_TIM_SET_COMPARE(&htim5, TIM_CHANNEL_2, MAX_INPUT - u_ang);
+    __HAL_TIM_SET_COMPARE(&htim5, TIM_CHANNEL_2, MAX_INPUT - u);
     __HAL_TIM_SET_COMPARE(&htim5, TIM_CHANNEL_3, MAX_INPUT);
-    __HAL_TIM_SET_COMPARE(&htim5, TIM_CHANNEL_4, MAX_INPUT - u_ang);
+    __HAL_TIM_SET_COMPARE(&htim5, TIM_CHANNEL_4, MAX_INPUT - u);
   }
   else
   {
-    __HAL_TIM_SET_COMPARE(&htim5, TIM_CHANNEL_1, MAX_INPUT + u_ang);
+    __HAL_TIM_SET_COMPARE(&htim5, TIM_CHANNEL_1, MAX_INPUT + u);
     __HAL_TIM_SET_COMPARE(&htim5, TIM_CHANNEL_2, MAX_INPUT);
-    __HAL_TIM_SET_COMPARE(&htim5, TIM_CHANNEL_3, MAX_INPUT + u_ang);
+    __HAL_TIM_SET_COMPARE(&htim5, TIM_CHANNEL_3, MAX_INPUT + u);
     __HAL_TIM_SET_COMPARE(&htim5, TIM_CHANNEL_4, MAX_INPUT);
   }
 }
@@ -299,6 +303,7 @@ void TurnLeft(Control_Typedef *pid2)
 void TurnRight(Control_Typedef *pid2){
   dt3 = 0.113f;
   float error2, deriv2, u_ang, u_fb, u_ff;
+  int u;
   UpdateReference();
 
   error2 = - v_ref - gz;
@@ -306,30 +311,31 @@ void TurnRight(Control_Typedef *pid2){
   deriv2 = (error2 - pre_error2) / CONTROL_PERIOD;
   deriv2 = D_FILTER_COFF * pre_deriv2 + (1.0f - D_FILTER_COFF) * deriv2;
   u_fb = pid2->kp * error2 + pid2->ki * sum_error2 + pid2->kd * deriv2;
-  u_ff = (Tp1 * a_ref + v_ref) / GYRO_PID_KP;
-  // u_ff = v_ref / GYRO_PID_KP;
+  u_ff = (Tp1 * a_ref + v_ref) / Kp;
+  // u_ff = v_ref / Kp;
   u_ang = u_fb + u_ff;
+  u = (int)(1000.0f * u_ang / bat_vol);
 
   pre_error2 = error2;
   pre_deriv2 = deriv2;
 
-  if (u_ang >= MAX_INPUT)
-    u_ang = MAX_INPUT;
-  if (u_ang <= -MAX_INPUT)
-    u_ang = -MAX_INPUT;
+  if (u >= MAX_INPUT)
+    u = MAX_INPUT;
+  if (u <= -MAX_INPUT)
+    u = -MAX_INPUT;
 
-  if (u_ang > 0)
+  if (u > 0)
   {
     __HAL_TIM_SET_COMPARE(&htim5, TIM_CHANNEL_1, MAX_INPUT);
-    __HAL_TIM_SET_COMPARE(&htim5, TIM_CHANNEL_2, MAX_INPUT - u_ang);
+    __HAL_TIM_SET_COMPARE(&htim5, TIM_CHANNEL_2, MAX_INPUT - u);
     __HAL_TIM_SET_COMPARE(&htim5, TIM_CHANNEL_3, MAX_INPUT);
-    __HAL_TIM_SET_COMPARE(&htim5, TIM_CHANNEL_4, MAX_INPUT - u_ang);
+    __HAL_TIM_SET_COMPARE(&htim5, TIM_CHANNEL_4, MAX_INPUT - u);
   }
   else
   {
-    __HAL_TIM_SET_COMPARE(&htim5, TIM_CHANNEL_1, MAX_INPUT + u_ang);
+    __HAL_TIM_SET_COMPARE(&htim5, TIM_CHANNEL_1, MAX_INPUT + u);
     __HAL_TIM_SET_COMPARE(&htim5, TIM_CHANNEL_2, MAX_INPUT);
-    __HAL_TIM_SET_COMPARE(&htim5, TIM_CHANNEL_3, MAX_INPUT + u_ang);
+    __HAL_TIM_SET_COMPARE(&htim5, TIM_CHANNEL_3, MAX_INPUT + u);
     __HAL_TIM_SET_COMPARE(&htim5, TIM_CHANNEL_4, MAX_INPUT);
   }
 }
@@ -350,8 +356,8 @@ void Uturn(Control_Typedef *pid2){
   deriv2 = (error2 - pre_error2) / CONTROL_PERIOD;
   deriv2 = D_FILTER_COFF * pre_deriv2 + (1.0f - D_FILTER_COFF) * deriv2;
   u_fb = pid2->kp * error2 + pid2->ki * sum_error2 + pid2->kd * deriv2;
-  u_ff = (Tp1 * a_ref + v_ref) / GYRO_PID_KP;
-  // u_ff = v_ref / GYRO_PID_KP;
+  // u_ff = (Tp1 * a_ref + v_ref) / Kp;
+  u_ff = v_ref / Kp;
   u_ang = u_fb + u_ff;
   u = (int)(1000.0f * u_ang / bat_vol);
 
