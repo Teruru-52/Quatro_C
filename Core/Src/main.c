@@ -76,9 +76,11 @@ extern float yaw, gz, gz_nonfil;;
 extern uint32_t ir_fl, ir_fr, ir_bl, ir_br;
 extern float bat_vol;
 extern float velocityL, velocityR, velocity;
-extern int16_t u_iden; 
+extern int u_iden; 
 
 int id = 0;
+int m_id = 0;
+int samp_id = 0;
 
 void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 {
@@ -98,15 +100,25 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 
         if (flag_mode == 0)
         {
-          Identification();
-          data1[id] = gz;
-          data2[id] = u_iden;
-          if (id >= 3000)
-          { // 3秒で停止
+          // Step_Identification();
+          M_Identification();
+
+          if (m_id > 127)
+          {
             MotorStop();
             flag_int = false;
           }
 
+          if(id % 20 == 0){
+            data1[samp_id] = gz;
+            data2[samp_id] = u_iden;
+            samp_id++;
+          }
+
+          if(id % 200 == 0){
+            // data2[m_id] = u_iden;
+            m_id++;
+          }
           id++;
         }
       }
@@ -116,10 +128,10 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
       else
         HAL_GPIO_WritePin(GPIOC, GPIO_PIN_8, GPIO_PIN_RESET);
 
-      if (cnt1kHz % 200 == 0)
-      {
-        // ExecuteLogger();
-      }
+      // if (cnt1kHz % 200 == 0)
+      // {
+      //   // ExecuteLogger();
+      // }
     }
   }
 }
@@ -196,11 +208,11 @@ int main(void)
     }
     else if (main_mode == 1){
       if (HAL_GPIO_ReadPin(GPIOB, GPIO_PIN_2) == 0){
-        for(int i = 0; i < 3000; i++){
+        for(int i = 0; i < 1271; i++){
           printf("%f \r\n", data1[i]);
         }
         printf("------------------------------------------ \r\n");
-        for(int i = 0; i < 3000; i++){
+        for(int i = 0; i < 1271; i++){
           printf("%d \r\n", data2[i]);
         }
       }

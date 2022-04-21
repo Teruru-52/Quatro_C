@@ -23,7 +23,7 @@
 #define VEL_PID_KD 1.548f
 #define D_FILTER_COFF2 0.301f
 
-#define MAX_INPUT 1000.0f
+#define MAX_INPUT 1599.0f
 
 #define CONTROL_PERIOD 0.001f
 
@@ -44,6 +44,7 @@ extern int flag_sensor;
 extern bool flag_int;
 extern int main_mode;
 extern int flag_mode;
+extern int m_id;
 
 typedef struct
 {
@@ -65,7 +66,9 @@ void TurnRight(Control_Typedef *pid2);
 void Uturn(Control_Typedef *pid2);
 void DetectFrontWall();
 void FrontWallCorrection();
-void Identification();
+void Step_Identification();
+void M_Identification();
+float M_Sequence(int i);
 void Back();
 void MotorStop();
 
