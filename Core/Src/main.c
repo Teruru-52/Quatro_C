@@ -79,14 +79,17 @@ extern float velocityL, velocityR, velocity;
 extern float u_left, u_right;
 extern float u_turn;
 
+extern float x_ref;
 extern float v_ref;
 extern float a_ref;
 extern float j_ref;
 
-float v[700];
-float ref1[700];
-float ref2[700];
-float ref3[700];
+float v[2000];
+float theta[2000];
+float ref1[2000];
+float ref2[2000];
+float ref3[2000];
+float ref4[2000];
 
 int id = 0;
 
@@ -112,12 +115,14 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 
           // TurnLeft(&pid_2);
           // TurnRight(&pid_2);
-          Uturn(&pid_2);
-          // v[id] = gz;
-          // ref1[id] = v_ref;
+          v[id] = gz;
+          theta[id] = yaw;
+          Uturn(&pid_1, &pid_2);
+          ref1[id] = v_ref;
           // ref2[id] = a_ref;
           // ref3[id] = j_ref;
-          if(id >= 526){
+          ref4[id] = x_ref;
+          if(id >= 1526){
             MotorStop();
             flag_int = false;
           }
@@ -211,11 +216,19 @@ int main(void)
     }
     else if (main_mode == 1){
       if (HAL_GPIO_ReadPin(GPIOB, GPIO_PIN_2) == 0){
-        for(int i = 0; i < 526; i++){
+        for(int i = 0; i < 1527; i++){
+          printf("%f \r\n", ref4[i]);
+        }
+        printf("theta------------------------------------------ \r\n");
+        for(int i = 0; i < 1527; i++){
+          printf("%f \r\n", theta[i]);
+        }
+        printf("ref1------------------------------------------ \r\n");
+        for(int i = 0; i < 1527; i++){
           printf("%f \r\n", ref1[i]);
         }
-        printf("------------------------------------------ \r\n");
-        for(int i = 0; i < 526; i++){
+        printf("omega------------------------------------------ \r\n");
+        for(int i = 0; i < 1527; i++){
           printf("%f \r\n", v[i]);
         }
         // for(int i = 0; i < 314; i++){

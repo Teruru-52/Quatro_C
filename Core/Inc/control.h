@@ -3,23 +3,27 @@
 #include "main.h"
 
 // Party Trick
-#define YAW_PID_KP 3.0f
-#define YAW_PID_KI 4.0f
+#define YAW_PID_KP 2.0f
+#define YAW_PID_KI 2.0f
 #define YAW_PID_KD 0.05f
 
-#define GYRO_PID_KP  0.462f
-#define GYRO_PID_KI  7.78f
-#define GYRO_PID_KD  -0.00218f
-#define D_FILTER_COFF 0.0139f
-#define Kp  11.59f
-#define Tp1 0.13505f
+// pidTuner
+// #define GYRO_PID_KP  1.09f
+// #define GYRO_PID_KI  75.8f
+// #define GYRO_PID_KD  -0.00213
+#define GYRO_PID_KP  1.59f
+#define GYRO_PID_KI  60.0f
+#define GYRO_PID_KD  -0.00213
+#define D_FILTER_COFF 0.89118f
+#define Kp  105.1f
+#define Tp1 37.67f
 
 #define VEL_PID_KP 19.72f
 #define VEL_PID_KI 52.0f
 #define VEL_PID_KD 1.548f
 #define D_FILTER_COFF2 0.301f
 
-#define MAX_INPUT 1000.0f
+#define MAX_INPUT 1600.0f
 
 #define CONTROL_PERIOD 0.001f
 
@@ -58,7 +62,7 @@ void GoStraight();
 void UpdateReference();
 void TurnLeft(Control_Typedef *pid2);
 void TurnRight(Control_Typedef *pid2);
-void Uturn(Control_Typedef *pid2);
+void Uturn(Control_Typedef *pid1, Control_Typedef *pid2);
 void DetectFrontWall();
 void FrontWallCorrection();
 void Back();

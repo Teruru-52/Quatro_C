@@ -12,9 +12,10 @@ static float filtered_ref = 0.0f;
 static float filtered_v_ref = 0.0f;
 static float filtered_a_ref = 0.0f;
 
-static float dt1 = 0.03f;
-static float dt2 = 0.04f;
 static float dt3;
+static float t1 = 0.03f;
+static float t2 = 0.07f;
+static float t3 = 0.1f;
 
 static const float radious = 0.0125f;
 static float pos = 0.0f;
@@ -22,13 +23,14 @@ static float pos = 0.0f;
 float u_left, u_right;
 float u_turn;
 
+float x_ref = 0.0f;
 float v_ref = 0.0f;
 float a_ref = 0.0f;
 float j_ref = 0.0f;
 static const float jm = 3500.0f;
 static const float am = jm * 0.03f;
-static const float vm = 7.35f;
-float cnt_turn = 0.0f;
+static const float v3 = 7.35f;
+float t = 0.0f;
 
 Control_Typedef pid_1, pid_2, pid_3;
 
@@ -172,47 +174,79 @@ void GoStraight()
 }
 
 void UpdateReference(){
-  if (cnt_turn <= dt1) {
-    v_ref = 0.5f * jm * cnt_turn * cnt_turn;
-    a_ref = jm * cnt_turn;
+  float x1 = 1.0f / 6.0f * jm * t1 * t1 * t1;
+  float v1 = 0.5f * jm * t1 * t1;
+  float x2 = x1 + v1 * (t2 - t1) + 0.5f * am * (t2 - t1) * (t2 - t1);
+  float v2 = v1 + am * (t2 - t1);
+  float x3 = x2 + v3 * t1 - 1.0f / 6.0f * jm * t1 * t1 * t1;
+  float x4 = x3 + v3 * dt3;
+  float x5 = x4 + (x3 - x2);
+  float x6 = x5 + (x2 - x1);
+
+  float t4 = t3 + dt3;
+  float t5 = t4 + t1;
+  float t6 = t4 + t2;
+  float t7 = t4 + t3;
+
+  if (t <= t1) {
+    x_ref = 1.0f / 6.0f *jm * t * t * t;
+    v_ref = 0.5f * jm * t * t;
+    a_ref = jm * t;
     j_ref = jm;
   }
-  else if (cnt_turn <= dt1 + dt2) {
-    v_ref = 0.5f * jm * dt1 * dt1 + am * (cnt_turn - 0.030f);
+  else if (t <= t2) {
+    x_ref = x1 + v1 * (t - t1) + 0.5f * am * (t - t1) * (t - t1);
+    v_ref = v1 + am * (t - t1);
     a_ref = am;
     j_ref = 0.0f;
   }
-  else if (cnt_turn <= 2 * dt1 + dt2) {
-    v_ref = vm - 0.5f * jm * (0.1f - cnt_turn) * (0.1f - cnt_turn);
-    a_ref = am - jm * (cnt_turn - 0.07f);
+  else if (t <= t3) {
+    x_ref = x3 + v3 * (t - t3) - 1.0f / 6.0f * jm * (t - t3) * (t - t3) * (t - t3);
+    v_ref = v3 - 0.5f * jm * (t - t3) * (t - t3);
+    a_ref = am - jm * (t - t2);
     j_ref = - jm;
   }
-  else if (cnt_turn <= 2 * dt1 + dt2 + dt3) {
-    v_ref = vm;
+  else if (t <= t4) {
+    x_ref = x3 + v3 * (t - t3);
+    v_ref = v3;
     a_ref = 0.0f;
     j_ref = 0.0f;
   }
-  else if (cnt_turn <= 3 * dt1 + dt2 + dt3) {
-    v_ref = vm - 0.5f * jm * (cnt_turn - 2 * dt1 - dt2 - dt3) * (cnt_turn - 2 * dt1 - dt2 - dt3);
-    a_ref = - jm * (cnt_turn - 2 * dt1 - dt2 - dt3);
+  else if (t <= t5) {
+    x_ref = x4 + v3 * (t - t4) - 1.0f / 6.0f * jm * (t - t4) * (t - t4) * (t - t4);
+    v_ref = v3 - 0.5f * jm * (t - t4) * (t - t4);
+    a_ref = - jm * (t - t4);
     j_ref = - jm;
   }
-  else if (cnt_turn <= 3 * dt1 + 2 * dt2 + dt3) {
-    v_ref = vm - 0.5f * jm * dt1 * dt1 - am * (cnt_turn - 3 * dt1 - dt2 - dt3);
+  else if (t <= t6) {
+    x_ref = x5 + v2 * (t - t5) - 0.5f * am * (t - t5) * (t - t5);
+    v_ref = v2 - am * (t - t5);
     a_ref = - am;
     j_ref = 0.0f;
   }
-  else if (cnt_turn <= 4 * dt1 + 2 * dt2 + dt3){
-    v_ref = 0.5f * jm * (cnt_turn - 4 * dt1 - 2 * dt2 - dt3) * (cnt_turn - 4 * dt1 - 2 * dt2 - dt3);
-    a_ref = - am + jm * (cnt_turn - 3 * dt1 - dt2 - dt3);
+  else if (t <= t7){
+    x_ref = x6 + v1 * (t - t6) - 1.0f / 6.0f * jm * (t - t6) * (t - t6) * (t - t6);
+    v_ref = 0.5f * jm * (t - t7) * (t - t7);
+    a_ref = - am + jm * (t - t6);
     j_ref = jm;
   }
-  if (cnt_turn >= 4 * dt1 + 2 * dt2 + dt3){
+  else if (t <= t7 + 1.0f){
+    if(dt3 == 0.113f){
+      x_ref = 3.1415f / 2.0f;
+    }
+    else {
+      x_ref = 3.1415f;
+    } 
+    v_ref = 0.0f;
+    a_ref = 0.0f;
+  }
+
+  if (t >= t7 + 1.0f){
     flag_int = false;
   }
   // filtered_v_ref = 0.2 * filtered_v_ref + (1.0 - 0.2) * v_ref;
   // filtered_a_ref = 0.2 * filtered_a_ref + (1.0 - 0.2) * a_ref;
-  cnt_turn += 0.001f;
+  t += 0.001f;
 }
 
 void DetectFrontWall()
@@ -271,10 +305,10 @@ void TurnLeft(Control_Typedef *pid2)
   deriv2 = (error2 - pre_error2) / CONTROL_PERIOD;
   deriv2 = D_FILTER_COFF * pre_deriv2 + (1.0f - D_FILTER_COFF) * deriv2;
   u_fb = pid2->kp * error2 + pid2->ki * sum_error2 + pid2->kd * deriv2;
-  u_ff = (Tp1 * a_ref + v_ref) / Kp;
+  u_ff = (Tp1 * v_ref + a_ref) / Kp;
   // u_ff = v_ref / Kp;
   u_ang = u_fb + u_ff;
-  u = (int)(1000.0f * u_ang / bat_vol);
+  u = (int)(MAX_INPUT * u_ang / bat_vol);
 
   pre_error2 = error2;
   pre_deriv2 = deriv2;
@@ -311,10 +345,10 @@ void TurnRight(Control_Typedef *pid2){
   deriv2 = (error2 - pre_error2) / CONTROL_PERIOD;
   deriv2 = D_FILTER_COFF * pre_deriv2 + (1.0f - D_FILTER_COFF) * deriv2;
   u_fb = pid2->kp * error2 + pid2->ki * sum_error2 + pid2->kd * deriv2;
-  u_ff = (Tp1 * a_ref + v_ref) / Kp;
+  u_ff = (Tp1 * v_ref + a_ref) / Kp;
   // u_ff = v_ref / Kp;
   u_ang = u_fb + u_ff;
-  u = (int)(1000.0f * u_ang / bat_vol);
+  u = (int)(MAX_INPUT * u_ang / bat_vol);
 
   pre_error2 = error2;
   pre_deriv2 = deriv2;
@@ -340,26 +374,31 @@ void TurnRight(Control_Typedef *pid2){
   }
 }
 
-void Uturn(Control_Typedef *pid2){
+void Uturn(Control_Typedef *pid1, Control_Typedef *pid2){
   dt3 = 0.326f;
+  float error, deriv;
   float error2, deriv2, u_ang, u_fb, u_ff;
   int u;
   UpdateReference();
 
-  // if (cnt_turn == 2 * dt1 + dt2 + dt3){
+  // if (t == t3 + dt3){
   //   pre_error2 = 0;
   //   pre_deriv2 = 0;
   //   sum_error2 = 0;
   // }
+  error = x_ref - yaw;
+  sum_error += error * CONTROL_PERIOD;
+  deriv = (error - pre_error) / CONTROL_PERIOD;
+
   error2 = v_ref - gz;
   sum_error2 += error2 * CONTROL_PERIOD;
   deriv2 = (error2 - pre_error2) / CONTROL_PERIOD;
   deriv2 = D_FILTER_COFF * pre_deriv2 + (1.0f - D_FILTER_COFF) * deriv2;
-  u_fb = pid2->kp * error2 + pid2->ki * sum_error2 + pid2->kd * deriv2;
-  // u_ff = (Tp1 * a_ref + v_ref) / Kp;
-  u_ff = v_ref / Kp;
+  u_fb = pid2->kp * error2 + pid2->ki * sum_error2 + pid2->kd * deriv2 + pid1->kp * error + pid1->ki * sum_error + pid1->kd * deriv;
+  // u_ff = (Tp1 * v_ref + a_ref) / Kp;
+  u_ff = Tp1 * v_ref / Kp;
   u_ang = u_fb + u_ff;
-  u = (int)(1000.0f * u_ang / bat_vol);
+  u = (int)(MAX_INPUT * u_ang / bat_vol / 2.0f);
 
   pre_error2 = error2;
   pre_deriv2 = deriv2;

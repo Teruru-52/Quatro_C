@@ -103,6 +103,7 @@ void GyroOffsetCalc()
         HAL_Delay(1);
     }
     gz_offset = gz_sum / 1000.0f;
+    // gz_offset = 0;
     // printf("%f\r\n", gyro_offset);
 
     // turn off LED
